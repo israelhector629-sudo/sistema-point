@@ -22,6 +22,23 @@
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
         .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
+        .header { 
+    background: var(--primary); 
+    color: white; 
+    padding: 35px 15px 10px 15px; /* Deixa um espaço de 35px no topo */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.header button {
+    background: none; 
+    border: none; 
+    color: white; 
+    font-size: 2rem; 
+    padding: 10px;
+    cursor: pointer;
+}
         .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; }
         .menu-btn.active { background: var(--primary); color: white; }
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
@@ -65,7 +82,7 @@
             </div>
             <div class="main-content">
                 <div id="inicio" class="card active">
-                    <h3>Bem-vindo, Point da Pizza!</h3>
+                    <h3>Bem-vindo, ao sistema do Point da Pizza!</h3>
                     <div id="area-alertas">✅ Estoque atualizado.</div>
                 </div>
                 <div id="pdv" class="card">
@@ -154,6 +171,7 @@
 </script>
 </body>
 </html>
+
 
 
 
