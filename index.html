@@ -1,229 +1,143 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistema de Controlo - Point</title>
+    <title>Point da Pizza - App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { 
-            --primary: #e74c3c; 
-            --secondary: #2c3e50; 
-            --success: #27ae60; 
-            --bg-color: #f4f7f6; 
-            --text-color: #333; 
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        
+        body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-
-        /* ANIMAÇÕES */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulseAlert { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43, 0.4); } 70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(192,57,43, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43, 0); } }
-
-        /* TELA DE LOGIN */
+        /* LOGIN - ORGANIZADO */
         #login-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, var(--secondary) 0%, #1a252f 100%); 
+            position: fixed; inset: 0; background: var(--secondary); 
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: white; transition: opacity 0.6s ease; padding: 20px; text-align: center; 
+            color: white; padding: 20px; transition: 0.5s;
         }
+        .login-header img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; }
+        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 60vh; padding: 10px; }
+        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 120px; border: 1px solid rgba(255,255,255,0.1); }
+        .login-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .login-card:active { background: var(--primary); transform: scale(0.95); }
+
+        /* APP ESTRUTURA */
+        #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
         
-        .login-header img { 
-            width: 160px; height: 160px; object-fit: cover; border-radius: 50%; 
-            border: 5px solid white; margin-bottom: 20px; background-color: white;
-            animation: float 4s ease-in-out infinite;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .login-grid { 
-            display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; 
-            max-width: 800px; animation: slideUp 0.8s ease-out; 
-        }
-
-        .login-card { 
-            background: rgba(255,255,255,0.08); padding: 25px 15px; border-radius: 20px; 
-            text-align: center; cursor: pointer; transition: var(--transition); 
-            width: 150px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
-        }
-
-        .login-card:hover { 
-            background: var(--primary); transform: translateY(-10px) scale(1.05); 
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4); border-color: white;
-        }
-
-        /* ESTRUTURA APP */
-        #app-container { display: none; width: 100%; height: 100vh; flex-direction: column; animation: fadeIn 1s; }
+        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        /* SIDEBAR */
         .sidebar { 
-            background-color: var(--secondary); color: white; width: 270px; 
-            display: flex; flex-direction: column; transition: var(--transition); 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            background: var(--secondary); color: white; width: 260px; 
+            display: flex; flex-direction: column; transition: 0.3s; z-index: 1000;
         }
+        .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .user-info img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
 
-        .menu-btn { 
-            background: none; border: none; color: #bdc3c7; padding: 15px 25px; 
-            text-align: left; font-size: 1rem; cursor: pointer; transition: var(--transition); 
-            display: flex; align-items: center; gap: 15px; width: 100%;
-            position: relative; overflow: hidden;
-        }
-
-        .menu-btn:hover, .menu-btn.active { color: white; background-color: rgba(255,255,255,0.05); }
-        .menu-btn.active::before { 
-            content: ''; position: absolute; left: 0; top: 0; height: 100%; 
-            width: 5px; background: var(--primary); 
-        }
+        .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; }
+        .menu-btn.active { background: var(--primary); color: white; }
 
         /* CONTEÚDO */
-        .card { 
-            background: white; padding: 25px; border-radius: 15px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; 
-            display: none; border: 1px solid #edf2f7;
-        }
-        .card.active { display: block; animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; margin-bottom: 15px; }
+        .card.active { display: block; }
 
-        .alerta-perigo { 
-            background: linear-gradient(to right, #fff5f5, #fed7d7); 
-            border-left: 8px solid var(--primary); padding: 25px; border-radius: 12px; 
-            color: #c53030; animation: pulseAlert 3s infinite; 
-        }
+        /* ELEMENTOS FORM */
+        h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--secondary); border-left: 4px solid var(--primary); padding-left: 10px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; }
 
-        /* TABELAS E BOTÕES */
-        button.success-btn { 
-            background: var(--success); color: white; border: none; padding: 18px; 
-            border-radius: 12px; cursor: pointer; font-size: 1.1rem; transition: var(--transition); 
-            width: 100%; font-weight: bold; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
-        }
-        button.success-btn:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4); }
-        button.success-btn:active { transform: scale(0.98); }
+        /* TABELA */
+        .table-res { width: 100%; overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .img-tab { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
 
-        .img-preview { 
-            width: 50px; height: 50px; object-fit: cover; border-radius: 10px; 
-            transition: transform 0.3s; cursor: zoom-in;
-        }
-        .img-preview:hover { transform: scale(2.5); z-index: 10; position: relative; }
-
+        /* MOBILE FIX */
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; height: 100vh; z-index: 1002; }
+            .sidebar { position: fixed; left: -260px; height: 100%; }
             .sidebar.open { left: 0; }
+            .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+            .overlay.active { display: block; }
         }
     </style>
 </head>
 <body onload="inicializar()">
 
-<div id="login-screen">
-    <div class="login-header">
-        <img src="WhatsApp Image 2026-03-06 at 04.57.24.jpeg" alt="Logo">
-        <h1 style="font-size: 2.5rem; margin-top: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">POINT</h1>
-        <p id="loading-text" style="font-weight: 300;">Sincronizando com a Nuvem...</p>
-    </div>
-    <div class="login-grid" id="login-grid"></div>
-</div>
-
-<div id="app-container">
-    <div class="mobile-header" style="display: flex; background: var(--primary); padding: 15px; color: white; justify-content: space-between; align-items: center;">
-        <h2 style="margin:0; font-size: 1.1rem;"><i class="fas fa-pizza-slice"></i> POINT DA PIZZA</h2>
-        <button onclick="toggleMobileMenu()" style="background:none; border:none; color:white; font-size:1.4rem;"><i class="fas fa-bars"></i></button>
+    <div id="login-screen">
+        <img src="logo.jpg" onerror="this.src='WhatsApp Image 2026-03-06 at 04.57.24.jpeg'" style="width:100px; height:100px; border-radius:50%; background:white; margin-bottom:10px;">
+        <h2 style="margin-bottom:20px;">POINT DA PIZZA</h2>
+        <div class="login-grid" id="login-grid"></div>
     </div>
 
-    <div class="app-body">
-        <div class="sidebar-overlay" onclick="toggleMobileMenu()" id="overlay"></div>
-
-        <div class="sidebar" id="sidebarMenu">
-            <div style="padding: 25px 20px;">
-                <h2 style="margin:0; color: var(--primary);">POINT</h2>
-                <p style="margin:0; font-size: 0.75rem; color: #7f8c8d;">Av. Regite Arabe 946</p>
-            </div>
-            
-            <div class="user-profile" id="perfilLogado"></div>
-            
-            <div style="flex: 1;">
-                <button class="menu-btn active" onclick="showTab('inicio', this)"><i class="fas fa-home"></i> Início</button>
-                <button class="menu-btn" onclick="showTab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
-                <button class="menu-btn" onclick="showTab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
-                <button class="menu-btn" onclick="checkPasswordAndShow('funcionarios', this)"><i class="fas fa-users-cog"></i> Gerir Equipa</button>
-                <button class="menu-btn" onclick="showTab('relatorios', this)"><i class="fas fa-file-invoice"></i> Relatórios</button>
-            </div>
-            
-            <button class="menu-btn" style="background: #c0392b; color: white; margin-top: auto;" onclick="fazerLogout()">
-                <i class="fas fa-sign-out-alt"></i> Trocar Utilizador
-            </button>
+    <div id="app-container">
+        <div class="header">
+            <span><i class="fas fa-pizza-slice"></i> POINT</span>
+            <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:1.5rem;"><i class="fas fa-bars"></i></button>
         </div>
 
-        <div class="main-content">
-            <div id="inicio" class="card active">
-                <h3><i class="fas fa-bullhorn"></i> Mural de Avisos</h3>
-                <div id="area-alerta-reposicao"></div>
+        <div class="app-body">
+            <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+            <div class="sidebar" id="sidebar">
+                <div class="user-info" id="user-info"></div>
+                <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
+                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-cart-arrow-down"></i> Registrar Saída</button>
+                <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Ajustes</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none;">SAIR</button>
             </div>
 
-            <div id="pdv" class="card">
-                <h3><i class="fas fa-cart-arrow-down"></i> Registrar Consumo</h3>
-                <div class="form-row">
-                    <div class="form-group"><label>Qual insumo saiu?</label><select id="pdvProduto"></select></div>
-                    <div class="form-group"><label>Quantidade:</label><input type="number" id="pdvQtd" value="1" step="0.1"></div>
+            <div class="main-content">
+                <div id="inicio" class="card active">
+                    <h3>Alertas de Estoque</h3>
+                    <div id="area-alertas"></div>
                 </div>
-                <button class="success-btn" onclick="registrarSaida()"><i class="fas fa-check"></i> CONFIRMAR NA NUVEM</button>
-                <div id="vendaAlert" class="alert">Atualizado com sucesso!</div>
-            </div>
 
-            <div id="estoque" class="card">
-                <h3><i class="fas fa-plus"></i> Novo Item</h3>
-                <div class="form-row">
-                    <div class="form-group"><label>Nome:</label><input type="text" id="novoItemNome"></div>
-                    <div class="form-group"><label>Qtd Inicial:</label><input type="number" id="novoItemQtd" value="0"></div>
-                    <div class="form-group">
-                        <label>Unidade:</label>
-                        <select id="novoItemUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
+                <div id="pdv" class="card">
+                    <h3>Baixar do Estoque</h3>
+                    <label>Produto:</label>
+                    <select id="selProd"></select>
+                    <label>Quantidade:</label>
+                    <input type="number" id="qSai" value="1">
+                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR SAÍDA</button>
+                </div>
+
+                <div id="estoque" class="card">
+                    <h3>Cadastrar Novo</h3>
+                    <input type="text" id="iNome" placeholder="Nome">
+                    <input type="number" id="iQtd" placeholder="Quantidade">
+                    <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
+                    <input type="file" id="iFoto">
+                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR</button>
+
+                    <div class="table-res">
+                        <table>
+                            <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ações</th></tr></thead>
+                            <tbody id="corpo-estoque"></tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Foto do Produto:</label><input type="file" id="novoItemFoto" accept="image/*"></div>
-                    <div class="form-group"><label>Categoria:</label><select id="novoItemCat"><option>Pizzas</option><option>Outros</option></select></div>
-                </div>
-                <button class="success-btn" style="background: var(--secondary);" onclick="prepararCadastroItem()">SALVAR PRODUTO</button>
 
-                <h3 style="margin-top: 40px;"><i class="fas fa-table"></i> Inventário em Tempo Real</h3>
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ações</th></tr></thead>
-                        <tbody id="tabela-estoque-body"></tbody>
-                    </table>
+                <div id="config" class="card">
+                    <h3>Gerir Equipe</h3>
+                    <input type="text" id="fNome" placeholder="Nome">
+                    <input type="password" id="fSenha" placeholder="Senha">
+                    <input type="file" id="fFoto">
+                    <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">ADICIONAR</button>
                 </div>
-            </div>
-
-            <div id="funcionarios" class="card">
-                <h3><i class="fas fa-user-plus"></i> Adicionar Colaborador</h3>
-                <div class="form-row">
-                    <div class="form-group"><label>Nome:</label><input type="text" id="funcNome"></div>
-                    <div class="form-group"><label>Senha (4 dígitos):</label><input type="password" id="funcSenha"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Cargo:</label><select id="funcCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select></div>
-                    <div class="form-group"><label>Foto Perfil:</label><input type="file" id="funcFoto" accept="image/*"></div>
-                </div>
-                <button class="success-btn" onclick="prepararCadastroFuncionario()">CADASTRAR</button>
-
-                <h3 style="margin-top: 30px;">Equipa Registada</h3>
-                <div class="table-responsive"><table id="tabela-equipe-body"></table></div>
-            </div>
-
-            <div id="relatorios" class="card">
-                <h3><i class="fas fa-print"></i> Relatórios de Turno</h3>
-                <button class="whatsapp-btn" onclick="enviarRelatorioWhatsApp()">ENVIAR FECHAMENTO AO PATRÃO</button>
             </div>
         </div>
     </div>
-</div>
 
 <script>
-    // Configurações do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
@@ -235,206 +149,120 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    let estoque = [];
-    let equipe = [];
-    let idFuncionarioLogado = null;
-
-    function toggleMobileMenu() {
-        document.getElementById('sidebarMenu').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('active');
-    }
+    const db = firebase.database();
+    let estoque = []; let equipe = [];
 
     function inicializar() {
-        database.ref('equipe').on('value', snap => {
+        db.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
             if(equipe.length === 0) {
-                equipe = [{id: 1, nome: 'Admin', cargo: 'Patrão', senha: '5616', foto: null}];
-                database.ref('equipe').set(equipe);
+                equipe = [{id: 1, nome: 'Admin', senha: '5616', cargo: 'Patrão'}];
+                db.ref('equipe').set(equipe);
             }
-            document.getElementById('loading-text').innerText = "Toque no seu perfil para entrar";
             renderLogin();
-            if(idFuncionarioLogado) {
-                atualizarTabelaEquipe();
-                atualizarPerfilSidebar();
-            }
         });
-
-        database.ref('estoque').on('value', snap => {
-            const data = snap.val();
-            estoque = data ? Object.values(data).filter(i => i != null) : [];
-            if(idFuncionarioLogado) atualizarTabelaEstoque();
+        db.ref('estoque').on('value', snap => {
+            estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
+            renderEstoque();
         });
     }
 
     function renderLogin() {
-        const grid = document.getElementById('login-grid');
-        grid.innerHTML = equipe.map(f => `
-            <div class="login-card" onclick="efetuarLogin(${f.id})">
-                ${f.foto ? `<img src="${f.foto}">` : `<div style="font-size:40px; margin-bottom:10px;"><i class="fas fa-user-circle"></i></div>`}
-                <h3 style="margin:0">${f.nome}</h3>
-                <small style="opacity:0.7">${f.cargo}</small>
+        document.getElementById('login-grid').innerHTML = equipe.map(f => `
+            <div class="login-card" onclick="entrar(${f.id})">
+                <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
+                <div style="font-size:0.9rem; font-weight:bold;">${f.nome}</div>
             </div>
         `).join('');
     }
 
-    function efetuarLogin(id) {
+    function entrar(id) {
         const f = equipe.find(x => x.id === id);
-        const senha = prompt(`Digite a senha de ${f.nome}:`);
-        if(senha === (f.senha || "5616")) {
-            idFuncionarioLogado = id;
-            document.getElementById('login-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-container').style.display = 'flex';
-                atualizarPerfilSidebar();
-                atualizarTabelaEstoque();
-            }, 600);
-        } else if(senha !== null) alert("Senha errada!");
-    }
-
-    function atualizarPerfilSidebar() {
-        const f = equipe.find(x => x.id === idFuncionarioLogado);
-        const div = document.getElementById('perfilLogado');
-        if(f) {
-            div.innerHTML = `
-                <div style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
-                    <div style="font-weight:bold; margin-top:5px;">${f.nome}</div>
-                    <div style="font-size:0.7rem; color:var(--primary); text-transform:uppercase;">${f.cargo}</div>
-                </div>
+        const p = prompt(`Senha para ${f.nome}:`);
+        if(p === (f.senha || "5616")) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            document.getElementById('user-info').innerHTML = `
+                <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
+                <div style="font-weight:bold; margin-top:5px;">${f.nome}</div>
             `;
-        }
+        } else if(p !== null) alert("Senha Errada!");
     }
 
-    function registrarSaida() {
-        const nome = document.getElementById('pdvProduto').value;
-        const qtd = parseFloat(document.getElementById('pdvQtd').value);
-        const item = estoque.find(i => i.nome === nome);
-        if(item && qtd > 0) {
-            item.qtd = Math.max(0, item.qtd - qtd);
-            database.ref('estoque').set(estoque);
-            document.getElementById('vendaAlert').style.display = 'block';
-            setTimeout(() => document.getElementById('vendaAlert').style.display = 'none', 2000);
-        }
-    }
-
-    function ajustarRapido(id, v) {
-        const item = estoque.find(i => i.id === id);
-        if(item) {
-            item.qtd = Math.max(0, item.qtd + v);
-            database.ref('estoque').set(estoque);
-        }
-    }
-
-    function atualizarTabelaEstoque() {
-        const tbody = document.getElementById('tabela-estoque-body');
-        const select = document.getElementById('pdvProduto');
-        
-        tbody.innerHTML = estoque.map(i => `
-            <tr style="animation: fadeIn 0.5s;">
-                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-preview"></td>
-                <td><strong>${i.nome}</strong></td>
-                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade}</td>
-                <td>
-                    <button onclick="ajustarRapido(${i.id}, 1)" style="padding:5px 10px; background:#3498db; color:white; border:none; border-radius:4px;"><i class="fas fa-plus"></i></button>
-                    <button onclick="ajustarRapido(${i.id}, -1)" style="padding:5px 10px; background:#f39c12; color:white; border:none; border-radius:4px;"><i class="fas fa-minus"></i></button>
-                </td>
+    function renderEstoque() {
+        document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
+            <tr>
+                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
+                <td>${i.nome}</td>
+                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade || ''}</td>
+                <td><button onclick="ajustar(${i.id}, 1)">+</button> <button onclick="ajustar(${i.id}, -1)">-</button></td>
             </tr>
         `).join('');
-
-        select.innerHTML = estoque.map(i => `<option value="${i.nome}">${i.nome} (${i.qtd})</option>`).join('');
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (${i.qtd})</option>`).join('');
         
         const faltas = estoque.filter(i => i.qtd < 5);
-        const areaAlerta = document.getElementById('area-alerta-reposicao');
-        if(faltas.length > 0) {
-            areaAlerta.innerHTML = `
-                <div class="alerta-perigo">
-                    <h4><i class="fas fa-exclamation-triangle"></i> REPOSIÇÃO URGENTE</h4>
-                    <p>Itens acabando: ${faltas.map(f => f.nome).join(', ')}</p>
-                </div>`;
-        } else {
-            areaAlerta.innerHTML = `<div style="color:green; padding:20px; text-align:center;"><i class="fas fa-check-circle"></i> Tudo em ordem no stock!</div>`;
-        }
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
+            `<div style="color:red; font-weight:bold;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : 
+            `<div style="color:green;">✅ Tudo OK!</div>`;
     }
 
-    function prepararCadastroItem() {
-        const nome = document.getElementById('novoItemNome').value;
-        const qtd = parseFloat(document.getElementById('novoItemQtd').value);
-        const unid = document.getElementById('novoItemUnid').value;
-        const cat = document.getElementById('novoItemCat').value;
-        const file = document.getElementById('novoItemFoto').files[0];
+    function ajustar(id, v) {
+        const i = estoque.find(x => x.id === id);
+        if(i) { i.qtd = Math.max(0, i.qtd + v); db.ref('estoque').set(estoque); }
+    }
 
-        if(!nome) return alert("Nome é obrigatório");
+    function baixar() {
+        const id = document.getElementById('selProd').value;
+        const q = parseFloat(document.getElementById('qSai').value);
+        const i = estoque.find(x => x.id == id);
+        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Baixa efetuada!"); }
+    }
 
-        const salvar = (img) => {
-            const novoId = Date.now();
-            estoque.push({id: novoId, nome, qtd, unidade: unid, categoria: cat, foto: img});
-            database.ref('estoque').set(estoque);
-            alert("Guardado com sucesso!");
+    function salvarItem() {
+        const n = document.getElementById('iNome').value;
+        const q = parseFloat(document.getElementById('iQtd').value);
+        const u = document.getElementById('iUnid').value;
+        const f = document.getElementById('iFoto').files[0];
+        const add = (img) => {
+            estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
+            db.ref('estoque').set(estoque);
+            alert("Salvo!");
         };
-
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = e => salvar(e.target.result);
-            reader.readAsDataURL(file);
-        } else salvar(null);
+        if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
+        else add(null);
     }
 
-    function showTab(id, btn) {
+    function addFunc() {
+        const n = document.getElementById('fNome').value;
+        const s = document.getElementById('fSenha').value;
+        const f = document.getElementById('fFoto').files[0];
+        const add = (img) => {
+            equipe.push({id: Date.now(), nome: n, senha: s, foto: img});
+            db.ref('equipe').set(equipe);
+            alert("Membro Adicionado!");
+        };
+        if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
+        else add(null);
+    }
+
+    function tab(id, btn) {
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
         btn.classList.add('active');
-        if(window.innerWidth < 768) toggleMobileMenu();
+        if(window.innerWidth <= 768) toggleMenu();
     }
 
-    function checkPasswordAndShow(id, btn) {
-        const s = prompt("Senha de Gerência:");
-        if(s === "5616") showTab(id, btn);
-        else alert("Acesso negado!");
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
     }
 
-    function fazerLogout() { location.reload(); }
-
-    function enviarRelatorioWhatsApp() {
-        const f = equipe.find(x => x.id === idFuncionarioLogado);
-        const texto = `🍕 *POINT DA PIZZA - RELATÓRIO*%0AOperador: ${f.nome}%0AStatus: Stock Atualizado.`;
-        window.open(`https://wa.me/55993375616?text=${texto}`);
+    function checkAdmin(id, btn) {
+        if(prompt("Senha Master:") === "5616") tab(id, btn);
+        else alert("Acesso Negado!");
     }
-
-    function atualizarTabelaEquipe() {
-        const tbody = document.getElementById('tabela-equipe-body');
-        tbody.innerHTML = equipe.map(f => `
-            <tr>
-                <td><img src="${f.foto || ''}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
-                <td>${f.nome}</td>
-                <td>${f.cargo}</td>
-            </tr>
-        `).join('');
-    }
-
-    function prepararCadastroFuncionario() {
-        const nome = document.getElementById('funcNome').value;
-        const senha = document.getElementById('funcSenha').value;
-        const cargo = document.getElementById('funcCargo').value;
-        const file = document.getElementById('funcFoto').files[0];
-
-        const salvar = (img) => {
-            equipe.push({id: Date.now(), nome, senha, cargo, foto: img});
-            database.ref('equipe').set(equipe);
-            alert("Equipa atualizada!");
-        };
-
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = e => salvar(e.target.result);
-            reader.readAsDataURL(file);
-        } else salvar(null);
-    }
-
 </script>
 </body>
 </html>
