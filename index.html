@@ -21,7 +21,9 @@
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
             color: white; padding: 20px; transition: 0.5s;
         }
-        .login-header img { width: 110px; height: 110px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; }
+        /* LOGO LOGIN */
+        .login-header img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
         .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 60vh; padding: 10px; }
         .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); }
         .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
@@ -30,7 +32,12 @@
 
         /* APP ESTRUTURA */
         #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
-        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* LOGO PEQUENA NO TOPO */
+        .logo-top { display: flex; align-items: center; gap: 10px; font-weight: bold; letter-spacing: 1px; }
+        .logo-top img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; background: white; }
+
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         /* SIDEBAR */
@@ -69,14 +76,17 @@
 <body onload="inicializar()">
 
     <div id="login-screen">
-        <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/707/707671.png'" style="width:90px; height:90px; border-radius:50%; background:white; margin-bottom:10px;">
+        <img src="WhatsApp Image 2026-03-06 at 04.57.24.jpeg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/707/707671.png'" alt="Logo Point">
         <h2 style="margin-bottom:20px; letter-spacing: 1px;">POINT DA PIZZA</h2>
         <div class="login-grid" id="login-grid"></div>
     </div>
 
     <div id="app-container">
         <div class="header">
-            <span><i class="fas fa-pizza-slice"></i> POINT</span>
+            <div class="logo-top">
+                <img src="WhatsApp Image 2026-03-06 at 04.57.24.jpeg" onerror="this.style.display='none'">
+                <span>POINT</span>
+            </div>
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:1.5rem;"><i class="fas fa-bars"></i></button>
         </div>
 
@@ -146,6 +156,7 @@
     </div>
 
 <script>
+    // Mesma lógica de Script anterior
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
