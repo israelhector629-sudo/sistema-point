@@ -123,15 +123,24 @@
     function enviarRelatorio() {
         const f = estoque.filter(i => i.qtd < 5);
         let m = `🍕 *POINT DA PIZZA*%0A*Responsável:* ${nomeLogado}%0A`;
+        
         if(f.length > 0) {
             m += `%0A⚠️ *COMPRAR:*%0A${f.map(x => `- ${x.nome} (${x.qtd} ${x.unidade})`).join('%0A')}`;
         } else {
-            m += `%0A✅ Estoque OK!`;
+            m += `%0A✅ Estoque em ordem!`;
         }
         
-        // Link em formato HTTPS para funcionar em qualquer celular
-        const url = `https://api.whatsapp.com/send?phone=55993375616&text=${m}`;
-        window.open(url, '_blank');
+        // Removemos o número fixo. Agora ele abre o seletor de contatos do WhatsApp.
+        const url = `https://api.whatsapp.com/send?text=${m}`;
+        
+        // Abre em uma nova aba para garantir que o celular reconheça o comando
+        const win = window.open(url, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            // Caso o navegador bloqueie o pop-up
+            location.href = url;
+        }
     }
 
     function renderListaEquipe() { document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `<div class="list-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" style="color:red; background:none; border:none;">Remover</button></div>`).join(''); }
@@ -143,6 +152,7 @@
 </script>
 </body>
 </html>
+
 
 
 
