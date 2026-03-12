@@ -12,44 +12,62 @@
     <style>
         :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        
         body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* LOGIN */
-        #login-screen { position: fixed; inset: 0; background: var(--secondary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; }
-     /* Procure essa parte e mude os valores de width e height */
-.login-header img { 
-    width: 180px; /* Tamanho ideal para celular e PC */
-    height: 180px; 
-    border-radius: 50%; 
-    border: 4px solid white; 
-    margin-bottom: 10px; 
-    object-fit: cover; 
-    background: white; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-}
-        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 60vh; padding: 10px; }
+        #login-screen { 
+            position: fixed; inset: 0; background: var(--secondary); 
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: white; padding: 20px; transition: 0.5s;
+        }
+        
+        /* LOGO LOGIN COM TAMANHO FIXO FORÇADO */
+        .login-header { text-align: center; margin-bottom: 20px; }
+        .login-header img { 
+            width: 150px !important; 
+            height: 150px !important; 
+            border-radius: 50%; 
+            border: 4px solid white; 
+            margin-bottom: 10px; 
+            object-fit: cover; 
+            background: white; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        }
+
+        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 50vh; padding: 10px; }
         .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); }
         .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
         .login-card span { display: block; font-size: 0.75rem; color: #bdc3c7; }
 
-        /* APP */
+        /* APP ESTRUTURA */
         #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
         .header { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        
         .logo-top { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .logo-top img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; background: white; }
 
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        /* SIDEBAR */
         .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
-        .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); }
+        
+        .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+
+        .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
         .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
 
-        .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; width: 100%; }
+        .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; }
         .menu-btn.active { background: var(--primary); color: white; }
 
+        /* CONTEÚDO */
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; margin-bottom: 15px; }
         .card.active { display: block; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
+
+        h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--secondary); border-left: 4px solid var(--primary); padding-left: 10px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
         @media (max-width: 768px) {
@@ -63,15 +81,17 @@
 <body onload="inicializar()">
 
     <div id="login-screen">
-        <img src="logo.jpg" alt="Logo Point">
-        <h2 style="margin-bottom:20px;">POINT DA PIZZA</h2>
+        <div class="login-header">
+            <img src="logo.jpg.jpeg?v=2" onerror="this.src='logo.jpg'" alt="Logo Point">
+            <h2 style="margin-top:10px; letter-spacing: 2px;">POINT DA PIZZA</h2>
+        </div>
         <div class="login-grid" id="login-grid"></div>
     </div>
 
     <div id="app-container">
         <div class="header">
             <div class="logo-top">
-                <img src="logo.jpg">
+                <img src="logo.jpg.jpeg?v=2" onerror="this.src='logo.jpg'">
                 <span>POINT</span>
             </div>
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:1.5rem;"><i class="fas fa-bars"></i></button>
@@ -80,31 +100,35 @@
         <div class="app-body">
             <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
             <div class="sidebar" id="sidebar">
+                <div class="sidebar-brand">
+                    <h3 style="margin:0; border:none; color:white; font-size: 1.2rem;">POINT DA PIZZA</h3>
+                    <small style="opacity:0.8">Gestão Profissional</small>
+                </div>
                 <div class="user-info" id="user-info"></div>
                 <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
                 <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-cart-arrow-down"></i> Registrar Saída</button>
                 <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Ajustes</button>
-                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">SAIR</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">SAIR / TROCAR USUÁRIO</button>
             </div>
 
             <div class="main-content">
                 <div id="inicio" class="card active">
-                    <h3>Alertas</h3>
+                    <h3>Alertas de Estoque</h3>
                     <div id="area-alertas"></div>
                 </div>
 
                 <div id="pdv" class="card">
-                    <h3>Baixar Estoque</h3>
+                    <h3>Baixar do Estoque</h3>
                     <select id="selProd"></select>
                     <input type="number" id="qSai" value="1" step="0.1">
-                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR</button>
+                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR SAÍDA</button>
                 </div>
 
                 <div id="estoque" class="card">
-                    <h3>Novo Item</h3>
+                    <h3>Cadastrar Produto</h3>
                     <input type="text" id="iNome" placeholder="Nome">
-                    <input type="number" id="iQtd" placeholder="Qtd">
+                    <input type="number" id="iQtd" placeholder="Quantidade">
                     <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     <input type="file" id="iFoto">
                     <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR</button>
@@ -112,7 +136,7 @@
                 </div>
 
                 <div id="config" class="card">
-                    <h3>Equipe</h3>
+                    <h3>Gerir Equipe</h3>
                     <input type="text" id="fNome" placeholder="Nome">
                     <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select>
                     <input type="password" id="fSenha" placeholder="Senha">
@@ -182,7 +206,7 @@
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd})</option>`).join('');
         const faltas = estoque.filter(i => i.qtd < 5);
         document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
-            `<div style="color:red;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo OK!</div>`;
+            `<div style="color:red; background:#ffcccc; padding:10px; border-radius:5px;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo OK!</div>`;
     }
 
     function baixar() {
@@ -240,4 +264,3 @@
 </script>
 </body>
 </html>
-
