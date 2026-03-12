@@ -16,7 +16,17 @@
 
         /* LOGIN */
         #login-screen { position: fixed; inset: 0; background: var(--secondary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; }
-        .login-header img { width: 130px; height: 130px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+     /* Procure essa parte e mude os valores de width e height */
+.login-header img { 
+    width: 180px; /* Tamanho ideal para celular e PC */
+    height: 180px; 
+    border-radius: 50%; 
+    border: 4px solid white; 
+    margin-bottom: 10px; 
+    object-fit: cover; 
+    background: white; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+}
         .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 60vh; padding: 10px; }
         .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); }
         .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
@@ -230,3 +240,4 @@
 </script>
 </body>
 </html>
+
