@@ -22,7 +22,6 @@
             color: white; padding: 20px; transition: 0.5s;
         }
         
-        /* LOGO LOGIN COM TAMANHO FIXO FORÇADO */
         .login-header { text-align: center; margin-bottom: 20px; }
         .login-header img { 
             width: 150px !important; 
@@ -51,9 +50,7 @@
         
         /* SIDEBAR */
         .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
-        
         .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
-
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
         .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
@@ -70,7 +67,11 @@
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
-        /* LISTA EQUIPE */
+        /* TABELA HISTÓRICO */
+        .table-res { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .img-tab { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
         .btn-del { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 
@@ -130,13 +131,20 @@
                 </div>
 
                 <div id="estoque" class="card">
-                    <h3>Cadastrar Produto</h3>
-                    <input type="text" id="iNome" placeholder="Nome">
+                    <h3>Adicionar Produto</h3>
+                    <input type="text" id="iNome" placeholder="Nome do Produto">
                     <input type="number" id="iQtd" placeholder="Quantidade">
                     <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     <input type="file" id="iFoto">
-                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR</button>
-                    <div id="corpo-estoque" style="margin-top:20px;"></div>
+                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR NO ESTOQUE</button>
+                    
+                    <h3 style="margin-top:30px; border:none;">Inventário Atual</h3>
+                    <div class="table-res">
+                        <table>
+                            <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
+                            <tbody id="corpo-estoque-lista"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div id="config" class="card">
@@ -147,7 +155,7 @@
                     <input type="file" id="fFoto">
                     <button class="btn-acao" style="background:var(--secondary); margin-bottom: 20px;" onclick="addFunc()">ADICIONAR</button>
                     
-                    <h3 style="border:none; margin-top:20px;">Lista da Equipe (Remover)</h3>
+                    <h3 style="border:none; margin-top:20px;">Remover Funcionário</h3>
                     <div id="lista-equipe-del"></div>
                 </div>
             </div>
@@ -224,42 +232,76 @@
     }
 
     function removerFunc(id) {
-        if(id === idLogado) return alert("Você não pode remover a si mesmo enquanto está logado!");
-        if(id === 1 && equipe.length > 1) return alert("O administrador principal não deve ser removido sem um substituto.");
-        
-        if(confirm("Tem certeza que deseja remover este funcionário da nuvem?")) {
+        if(id === idLogado) return alert("Você não pode remover a si mesmo logado!");
+        if(confirm("Remover funcionário?")) {
             const novaEquipe = equipe.filter(f => f.id !== id);
             db.ref('equipe').set(novaEquipe);
-            alert("Funcionário removido!");
         }
     }
 
     function renderEstoque() {
+        // TELA DE SAÍDA (SELECT)
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd})</option>`).join('');
+        
+        // ALERTAS INÍCIO
         const faltas = estoque.filter(i => i.qtd < 5);
         document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
             `<div style="color:red; background:#ffcccc; padding:10px; border-radius:5px;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo OK!</div>`;
+
+        // LISTA VISÍVEL NO ESTOQUE (HISTÓRICO)
+        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
+            <tr>
+                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
+                <td><strong>${i.nome}</strong></td>
+                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade}</td>
+                <td><button onclick="removerItemEstoque(${i.id})" style="color:red; background:none; border:none; font-size:1.2rem;"><i class="fas fa-trash-alt"></i></button></td>
+            </tr>
+        `).join('');
+    }
+
+    function removerItemEstoque(id) {
+        if(confirm("Excluir este item do estoque definitivamente?")) {
+            const novoEstoque = estoque.filter(i => i.id !== id);
+            db.ref('estoque').set(novoEstoque);
+        }
     }
 
     function baixar() {
         const id = document.getElementById('selProd').value;
         const q = parseFloat(document.getElementById('qSai').value);
         const i = estoque.find(x => x.id == id);
-        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Registrado!"); }
+        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Baixa efetuada!"); }
     }
 
     function salvarItem() {
-        const n = document.getElementById('iNome').value;
+        const n = document.getElementById('iNome').value.trim();
         const q = parseFloat(document.getElementById('iQtd').value);
         const u = document.getElementById('iUnid').value;
         const f = document.getElementById('iFoto').files[0];
-        const add = (img) => {
-            estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
+        
+        if(!n || isNaN(q)) return alert("Preencha Nome e Quantidade!");
+
+        // LÓGICA PARA NÃO DUPLICAR: Verifica se já existe um item com esse nome
+        const itemExistente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
+
+        const finalizar = (img) => {
+            if(itemExistente) {
+                // SOMA AO INVÉS DE DUPLICAR
+                itemExistente.qtd += q;
+                if(img) itemExistente.foto = img; // Atualiza a foto se enviar uma nova
+                alert(`Somado ao estoque existente: ${itemExistente.nome}`);
+            } else {
+                // CRIA NOVO SE NÃO EXISTIR
+                estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
+                alert("Novo item cadastrado!");
+            }
             db.ref('estoque').set(estoque);
-            alert("Salvo!");
+            document.getElementById('iNome').value = '';
+            document.getElementById('iQtd').value = '';
         };
-        if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
-        else add(null);
+
+        if(f) { const r = new FileReader(); r.onload = e => finalizar(e.target.result); r.readAsDataURL(f); }
+        else finalizar(null);
     }
 
     function addFunc() {
