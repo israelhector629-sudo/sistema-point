@@ -28,7 +28,6 @@
         .header { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
         .logo-top { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .logo-top img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; background: white; }
-        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
         .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
@@ -44,12 +43,14 @@
         .card.active { display: block; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
 
         .table-res { width: 100%; overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; min-width: 400px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        
+        /* HISTORICO */
+        .hist-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        .hist-time { color: #999; font-size: 0.75rem; }
 
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100%; }
@@ -81,13 +82,12 @@
         <div class="app-body">
             <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
             <div class="sidebar" id="sidebar">
-                <div class="sidebar-brand">
-                    <h3 style="margin:0; border:none; color:white; font-size: 1.2rem;">POINT DA PIZZA</h3>
-                </div>
+                <div class="sidebar-brand"><h3>POINT DA PIZZA</h3></div>
                 <div class="user-info" id="user-info"></div>
                 <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
                 <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
                 <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="tab('historico', this)"><i class="fas fa-history"></i> Histórico</button>
                 <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Ajustes</button>
                 <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">SAIR</button>
@@ -113,22 +113,21 @@
                     <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     <input type="file" id="iFoto">
                     <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR / SOMAR</button>
-                    <div class="table-res">
-                        <table>
-                            <thead><tr><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
-                            <tbody id="corpo-estoque-lista"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-res"><table><thead><tr><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead><tbody id="corpo-estoque-lista"></tbody></table></div>
+                </div>
+
+                <div id="historico" class="card">
+                    <h3>Histórico de Movimentação</h3>
+                    <div id="lista-historico"></div>
                 </div>
 
                 <div id="relatorio" class="card">
                     <h3>Fechamento de Turno</h3>
-                    <p style="margin-bottom:15px; color:#666;">Clique no botão abaixo para enviar o resumo do estoque e a lista de compras para o patrão.</p>
-                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO WHATSAPP</button>
+                    <button class="btn-acao" style="background:#25D366;" onclick="enviarRelatorio()">ENVIAR WHATSAPP</button>
                 </div>
 
                 <div id="config" class="card">
-                    <h3>Equipe</h3>
+                    <h3>Gerir Equipe</h3>
                     <input type="text" id="fNome" placeholder="Nome">
                     <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select>
                     <input type="password" id="fSenha" placeholder="Senha">
@@ -153,20 +152,28 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let estoque = []; let equipe = [];
+    let estoque = []; let equipe = []; let historico = [];
     let idLogado = null; let nomeLogado = "";
 
     function inicializar() {
         db.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
-            renderLogin();
-            renderListaEquipe();
+            renderLogin(); renderListaEquipe();
         });
         db.ref('estoque').on('value', snap => {
             estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
             renderEstoque();
         });
+        db.ref('historico').limitToLast(30).on('value', snap => {
+            historico = snap.val() ? Object.values(snap.val()).reverse() : [];
+            renderHistorico();
+        });
+    }
+
+    function registrarLog(msg) {
+        const data = new Date().toLocaleString('pt-BR');
+        db.ref('historico').push({ msg: msg, data: data });
     }
 
     function renderLogin() {
@@ -193,46 +200,24 @@
     function renderEstoque() {
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (${i.qtd})</option>`).join('');
         const faltas = estoque.filter(i => i.qtd < 5);
-        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? `<div style="color:red; font-weight:bold;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo em dia!</div>`;
-
-        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
-            <tr>
-                <td><strong>${i.nome}</strong></td>
-                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade}</td>
-                <td><button onclick="removerItemEstoque(${i.id})"><i class="fas fa-trash"></i></button></td>
-            </tr>
-        `).join('');
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? `<div style="color:red; font-weight:bold;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo OK!</div>`;
+        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `<tr><td><strong>${i.nome}</strong></td><td>${i.qtd} ${i.unidade}</td><td><button onclick="removerItemEstoque(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
     }
 
-    function enviarRelatorio() {
-        const faltas = estoque.filter(i => i.qtd < 5);
-        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*%0A%0A`;
-        msg += `*Responsável:* ${nomeLogado}%0A`;
-        msg += `*Data:* ${new Date().toLocaleDateString()}%0A%0A`;
-        
-        if(faltas.length > 0) {
-            msg += `⚠️ *ITENS PARA COMPRAR:*%0A`;
-            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})%0A`);
-        } else {
-            msg += `✅ *ESTOQUE:* Tudo em ordem!%0A`;
-        }
-        
-        msg += `%0A_Enviado via Sistema Point_`;
-        window.open(`https://wa.me/55993375616?text=${msg}`);
-    }
-
-    function removerItemEstoque(id) {
-        if(confirm("Excluir item?")) {
-            estoque = estoque.filter(i => i.id !== id);
-            db.ref('estoque').set(estoque);
-        }
+    function renderHistorico() {
+        document.getElementById('lista-historico').innerHTML = historico.map(h => `<div class="hist-item"><div>${h.msg}</div><div class="hist-time">${h.data}</div></div>`).join('');
     }
 
     function baixar() {
         const id = document.getElementById('selProd').value;
         const q = parseFloat(document.getElementById('qSai').value);
         const i = estoque.find(x => x.id == id);
-        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Saída ok!"); }
+        if(i && q > 0) {
+            i.qtd = Math.max(0, i.qtd - q);
+            db.ref('estoque').set(estoque);
+            registrarLog(`${nomeLogado} removeu ${q} ${i.unidade} de ${i.nome}`);
+            alert("Baixa efetuada!");
+        }
     }
 
     function salvarItem() {
@@ -241,22 +226,41 @@
         const u = document.getElementById('iUnid').value;
         const f = document.getElementById('iFoto').files[0];
         if(!n || isNaN(q)) return alert("Dados incompletos!");
-
         const existente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
         const final = (img) => {
-            if(existente) { existente.qtd += q; } 
-            else { estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img}); }
+            if(existente) { 
+                existente.qtd += q; 
+                registrarLog(`${nomeLogado} somou ${q} ${existente.unidade} em ${existente.nome}`);
+            } else { 
+                estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
+                registrarLog(`${nomeLogado} cadastrou ${n}`);
+            }
             db.ref('estoque').set(estoque);
-            alert("Estoque atualizado!");
+            alert("Salvo!");
         };
         if(f) { const r = new FileReader(); r.onload = e => final(e.target.result); r.readAsDataURL(f); }
         else final(null);
     }
 
+    function enviarRelatorio() {
+        const faltas = estoque.filter(i => i.qtd < 5);
+        let msg = `🍕 *FECHAMENTO POINT DA PIZZA*%0A*Responsável:* ${nomeLogado}%0A`;
+        if(faltas.length > 0) { msg += `%0A⚠️ *COMPRAR:*%0A${faltas.map(f => `- ${f.nome} (${f.qtd} ${f.unidade})`).join('%0A')}`; }
+        else { msg += `%0A✅ Estoque em ordem!`; }
+        window.open(`https://wa.me/55993375616?text=${msg}`);
+    }
+
+    function removerItemEstoque(id) {
+        if(confirm("Excluir item?")) {
+            const i = estoque.find(x => x.id === id);
+            registrarLog(`${nomeLogado} APAGOU o item ${i.nome} do sistema`);
+            estoque = estoque.filter(item => item.id !== id);
+            db.ref('estoque').set(estoque);
+        }
+    }
+
     function renderListaEquipe() {
-        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
-            <div class="list-item"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" class="btn-del">Remover</button></div>
-        `).join('');
+        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `<div class="list-item" style="padding:10px; border-bottom:1px solid #ddd;"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" style="color:red; background:none; border:none;">Remover</button></div>`).join('');
     }
 
     function removerFunc(id) {
@@ -275,7 +279,7 @@
         const add = (img) => {
             equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img});
             db.ref('equipe').set(equipe);
-            alert("Membro adicionado!");
+            alert("Adicionado!");
         };
         if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
         else add(null);
