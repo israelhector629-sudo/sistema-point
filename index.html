@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema Point da Pizza</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --primary: #e74c3c; --secondary: #2c3e50; --success: #27ae60; --bg-color: #f4f7f6; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { margin: 0; background-color: var(--bg-color); color: #333; display: flex; height: 100vh; overflow: hidden; }
+
+        /* LOGIN ANIMADO */
+        #login-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: var(--secondary); z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: white; padding: 20px; transition: 0.5s;
+        }
+        .login-header img {
+            width: 150px; height: 150px; border-radius: 50%; border: 4px solid white;
+            margin-bottom: 15px; animation: float 3s ease-in-out infinite; object-fit: cover; background: white;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .login-card { 
+            background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; 
+            text-align: center; cursor: pointer; transition: 0.3s; width: 130px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .login-card:hover { background: var(--primary); transform: scale(1.1); }
+        .login-card img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+
+        /* APP SIDEBAR */
+        #app-container { display: none; width: 100%; height: 100vh; flex-direction: column; }
+        .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; }
+        .user-profile { text-align: center; padding: 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .user-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 10px; animation: glow 2s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 5px var(--primary); } to { box-shadow: 0 0 20px var(--primary); } }
+
+        .menu-btn { background: none; border: none; color: white; padding: 15px 20px; text-align: left; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .menu-btn:hover, .menu-btn.active { background: var(--primary); padding-left: 30px; }
+        
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; animation: slideIn 0.4s ease-out; }
+        .card.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+        .img-tab { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; transition: 0.3s; }
+        .img-tab:hover { transform: scale(2); z-index: 10; position: relative; }
+    </style>
+</head>
+<body onload="inicializar()">
+
+    <div id="login-screen">
+        <div class="login-header">
+            <img src="WhatsApp Image 2026-03-06 at 04.57.24.jpeg" alt="Logo">
+            <h1>POINT DA PIZZA</h1>
+            <p id="load-msg">A carregar nuvem...</p>
+        </div>
+        <div class="login-grid" id="login-grid"></div>
+    </div>
+
+    <div id="app-container">
+        <div style="display: flex; flex: 1; overflow: hidden;">
+            <div class="sidebar">
+                <h2 style="text-align:center; color:var(--primary); margin: 20px 0 0;">POINT</h2>
+                <p style="text-align:center; font-size:0.7rem; color:#888; margin-bottom:10px;">Av. Regite Arabe 946</p>
+                <div id="perfil-lateral" class="user-profile"></div>
+                <button class="menu-btn active" onclick="showTab('inicio', this)"><i class="fas fa-home"></i> Início</button>
+                <button class="menu-btn" onclick="showTab('estoque', this)"><i class="fas fa-box"></i> Estoque</button>
+                <button class="menu-btn" onclick="showTab('pdv', this)"><i class="fas fa-minus-circle"></i> Saída</button>
+                <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-users"></i> Equipe</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; border:none; color:white; cursor:pointer;">SAIR</button>
+            </div>
+
+            <div class="main-content">
+                <div id="inicio" class="card active">
+                    <h3>🔔 Avisos</h3>
+                    <div id="area-alertas"></div>
+                </div>
+
+                <div id="estoque" class="card">
+                    <h3>📦 Gerenciar Estoque</h3>
+                    <input type="text" id="iNome" placeholder="Nome do Item" style="width:100%; padding:10px; margin-bottom:10px;">
+                    <input type="number" id="iQtd" placeholder="Quantidade" style="width:100%; padding:10px; margin-bottom:10px;">
+                    <input type="file" id="iFoto" style="width:100%; margin-bottom:10px;">
+                    <button onclick="salvarItem()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">SALVAR NA NUVEM</button>
+                    <table style="width:100%; margin-top:20px; border-collapse:collapse;" border="1">
+                        <thead><tr style="background:#eee"><th>Foto</th><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
+                        <tbody id="corpo-estoque"></tbody>
+                    </table>
+                </div>
+
+                <div id="pdv" class="card">
+                    <h3>🛒 Registrar Saída</h3>
+                    <select id="selProd" style="width:100%; padding:10px; margin-bottom:10px;"></select>
+                    <input type="number" id="qSai" value="1" style="width:100%; padding:10px; margin-bottom:10px;">
+                    <button onclick="baixar()" style="width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:8px; cursor:pointer;">BAIXAR ESTOQUE</button>
+                </div>
+
+                <div id="config" class="card">
+                    <h3>👥 Cadastro de Equipe</h3>
+                    <input type="text" id="fNome" placeholder="Nome">
+                    <input type="password" id="fSenha" placeholder="Senha">
+                    <input type="file" id="fFoto">
+                    <button onclick="addFunc()" style="width:100%; padding:15px; background:var(--secondary); color:white; border:none; border-radius:8px; cursor:pointer;">ADICIONAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+      authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+      databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+      projectId: "point-da-pizza-fc5d6",
+      storageBucket: "point-da-pizza-fc5d6.firebasestorage.app",
+      messagingSenderId: "658125716246",
+      appId: "1:658125716246:web:ca129202695923a046ae37"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let estoque = []; let equipe = []; let userLogado = null;
+
+    function inicializar() {
+        db.ref('equipe').on('value', snap => {
+            const data = snap.val();
+            equipe = data ? Object.values(data).filter(f => f != null) : [];
+            if(equipe.length === 0) {
+                equipe = [{id: 1, nome: 'Admin', senha: '5616', cargo: 'Patrão'}];
+                db.ref('equipe').set(equipe);
+            }
+            document.getElementById('load-msg').innerText = "Escolha seu perfil:";
+            renderLogin();
+        });
+
+        db.ref('estoque').on('value', snap => {
+            estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
+            renderTabelas();
+        });
+    }
+
+    function renderLogin() {
+        const grid = document.getElementById('login-grid');
+        grid.innerHTML = equipe.map(f => `
+            <div class="login-card" onclick="entrar(${f.id})">
+                <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
+                <div><strong>${f.nome}</strong></div>
+            </div>
+        `).join('');
+    }
+
+    function entrar(id) {
+        const f = equipe.find(x => x.id === id);
+        const p = prompt(`Senha para ${f.nome}:`);
+        if(p === (f.senha || "5616")) {
+            userLogado = f;
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                document.getElementById('perfil-lateral').innerHTML = `
+                    <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
+                    <div style="font-weight:bold">${f.nome}</div>
+                    <small>${f.cargo || 'Equipe'}</small>
+                `;
+            }, 500);
+        } else if(p !== null) alert("Senha errada!");
+    }
+
+    function renderTabelas() {
+        document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
+            <tr>
+                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
+                <td><strong>${i.nome}</strong></td>
+                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold">${i.qtd}</td>
+                <td><button onclick="ajustar(${i.id}, 1)">+</button> <button onclick="ajustar(${i.id}, -1)">-</button></td>
+            </tr>
+        `).join('');
+
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+        const faltas = estoque.filter(i => i.qtd < 5);
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
+            `<div style="background:#ffcccc; padding:15px; border-radius:10px; color:red">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : 
+            "<p style='color:green'>✅ Tudo em ordem!</p>";
+    }
+
+    function ajustar(id, v) {
+        const i = estoque.find(x => x.id === id);
+        if(i) { i.qtd = Math.max(0, i.qtd + v); db.ref('estoque').set(estoque); }
+    }
+
+    function baixar() {
+        const id = document.getElementById('selProd').value;
+        const q = parseFloat(document.getElementById('qSai').value);
+        const i = estoque.find(x => x.id == id);
+        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Registrado!"); }
+    }
+
+    function salvarItem() {
+        const n = document.getElementById('iNome').value.trim();
+        const q = parseFloat(document.getElementById('iQtd').value);
+        const f = document.getElementById('iFoto').files[0];
+        if(!n || isNaN(q)) return alert("Preencha tudo!");
+
+        const existe = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
+        if(existe) {
+            existe.qtd += q;
+            db.ref('estoque').set(estoque);
+            alert("Quantidade somada!");
+        } else {
+            const add = (img) => {
+                estoque.push({id: Date.now(), nome: n, qtd: q, foto: img});
+                db.ref('estoque').set(estoque);
+                alert("Novo item salvo!");
+            };
+            if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
+            else add(null);
+        }
+    }
+
+    function addFunc() {
+        const n = document.getElementById('fNome').value;
+        const s = document.getElementById('fSenha').value;
+        const f = document.getElementById('fFoto').files[0];
+        const salvarF = (img) => {
+            equipe.push({id: Date.now(), nome: n, senha: s, foto: img, cargo: 'Auxiliar'});
+            db.ref('equipe').set(equipe);
+            alert("Membro adicionado!");
+        };
+        if(f) { const r = new FileReader(); r.onload = e => salvarF(e.target.result); r.readAsDataURL(f); }
+        else salvarF(null);
+    }
+
+    function showTab(t, b) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
+        b.classList.add('active');
+    }
+
+    function checkAdmin(t, b) {
+        if(prompt("Senha Master:") === "5616") showTab(t, b);
+        else alert("Acesso negado!");
+    }
+</script>
+</body>
+</html>
