@@ -70,6 +70,10 @@
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
+        /* LISTA EQUIPE */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100%; }
             .sidebar.open { left: 0; }
@@ -141,7 +145,10 @@
                     <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select>
                     <input type="password" id="fSenha" placeholder="Senha">
                     <input type="file" id="fFoto">
-                    <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">ADICIONAR</button>
+                    <button class="btn-acao" style="background:var(--secondary); margin-bottom: 20px;" onclick="addFunc()">ADICIONAR</button>
+                    
+                    <h3 style="border:none; margin-top:20px;">Lista da Equipe (Remover)</h3>
+                    <div id="lista-equipe-del"></div>
                 </div>
             </div>
         </div>
@@ -161,6 +168,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let estoque = []; let equipe = [];
+    let idLogado = null;
 
     function inicializar() {
         db.ref('equipe').on('value', snap => {
@@ -171,6 +179,7 @@
                 db.ref('equipe').set(equipe);
             }
             renderLogin();
+            renderListaEquipe();
         });
         db.ref('estoque').on('value', snap => {
             estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
@@ -192,6 +201,7 @@
         const f = equipe.find(x => x.id === id);
         const p = prompt(`Senha para ${f.nome}:`);
         if(p === (f.senha || "5616")) {
+            idLogado = id;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
             document.getElementById('user-info').innerHTML = `
@@ -200,6 +210,28 @@
                 <div class="badge">${f.cargo}</div>
             `;
         } else if(p !== null) alert("Senha Errada!");
+    }
+
+    function renderListaEquipe() {
+        const container = document.getElementById('lista-equipe-del');
+        if(!container) return;
+        container.innerHTML = equipe.map(f => `
+            <div class="list-item">
+                <span><strong>${f.nome}</strong> (${f.cargo})</span>
+                <button class="btn-del" onclick="removerFunc(${f.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+    }
+
+    function removerFunc(id) {
+        if(id === idLogado) return alert("Você não pode remover a si mesmo enquanto está logado!");
+        if(id === 1 && equipe.length > 1) return alert("O administrador principal não deve ser removido sem um substituto.");
+        
+        if(confirm("Tem certeza que deseja remover este funcionário da nuvem?")) {
+            const novaEquipe = equipe.filter(f => f.id !== id);
+            db.ref('equipe').set(novaEquipe);
+            alert("Funcionário removido!");
+        }
     }
 
     function renderEstoque() {
@@ -239,6 +271,8 @@
             equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img});
             db.ref('equipe').set(equipe);
             alert("Adicionado!");
+            document.getElementById('fNome').value = '';
+            document.getElementById('fSenha').value = '';
         };
         if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
         else add(null);
