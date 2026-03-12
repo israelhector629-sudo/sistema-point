@@ -10,7 +10,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e74c3c; --secondary: #1a252f; --bg: #f4f7f8; }
+        /* AQUI ESTAVA O ERRO: Faltava o --success (Verde) */
+        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; }
+        
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background-color: var(--bg); color: #333; display: flex; height: 100vh; overflow: hidden; }
 
@@ -62,7 +64,7 @@
         input, select { width: 100%; padding: 16px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; background: #fafafa; }
         input:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
         
-        .btn-acao { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .btn-acao { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .btn-acao:active { transform: scale(0.98); }
 
         /* TABELA DESLIZANTE (SWIPE) */
@@ -128,7 +130,7 @@
                     <h3>Registrar Saída</h3>
                     <select id="selProd"></select>
                     <input type="number" id="qSai" value="1" placeholder="Quantidade">
-                    <button class="btn-acao" style="background:var(--success)" onclick="baixar()"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
+                    <button class="btn-acao" style="background:var(--success); color:white;" onclick="baixar()"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
                 </div>
 
                 <div id="estoque" class="card">
@@ -141,7 +143,7 @@
                     <input type="file" id="iFoto">
                     <button class="btn-acao" onclick="salvarItem()"><i class="fas fa-cloud-upload-alt"></i> SALVAR</button>
 
-                    <h3 style="margin-top:25px;">Tabela (Deslize para o lado 👉)</h3>
+                    <h3 style="margin-top:25px;">Tabela (Deslize 👉)</h3>
                     <div class="table-res">
                         <table>
                             <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
