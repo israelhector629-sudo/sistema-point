@@ -10,37 +10,34 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; }
+        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
         
         body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* LOGIN - ORGANIZADO */
+        /* LOGIN */
         #login-screen { 
             position: fixed; inset: 0; background: var(--secondary); 
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
             color: white; padding: 20px; transition: 0.5s;
         }
-        .login-header img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; }
+        .login-header img { width: 110px; height: 110px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; object-fit: cover; background: white; }
         .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 60vh; padding: 10px; }
-        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 120px; border: 1px solid rgba(255,255,255,0.1); }
-        .login-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); }
+        .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .login-card span { display: block; font-size: 0.75rem; color: #bdc3c7; margin-top: 2px; }
         .login-card:active { background: var(--primary); transform: scale(0.95); }
 
         /* APP ESTRUTURA */
         #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
-        
         .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         /* SIDEBAR */
-        .sidebar { 
-            background: var(--secondary); color: white; width: 260px; 
-            display: flex; flex-direction: column; transition: 0.3s; z-index: 1000;
-        }
+        .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .user-info img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
+        .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
+        .user-info .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
 
         .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; }
         .menu-btn.active { background: var(--primary); color: white; }
@@ -50,7 +47,6 @@
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; margin-bottom: 15px; }
         .card.active { display: block; }
 
-        /* ELEMENTOS FORM */
         h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--secondary); border-left: 4px solid var(--primary); padding-left: 10px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; }
@@ -58,7 +54,7 @@
         /* TABELA */
         .table-res { width: 100%; overflow-x: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; min-width: 400px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
         .img-tab { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
 
         /* MOBILE FIX */
@@ -73,8 +69,8 @@
 <body onload="inicializar()">
 
     <div id="login-screen">
-        <img src="logo.jpg" onerror="this.src='WhatsApp Image 2026-03-06 at 04.57.24.jpeg'" style="width:100px; height:100px; border-radius:50%; background:white; margin-bottom:10px;">
-        <h2 style="margin-bottom:20px;">POINT DA PIZZA</h2>
+        <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/707/707671.png'" style="width:90px; height:90px; border-radius:50%; background:white; margin-bottom:10px;">
+        <h2 style="margin-bottom:20px; letter-spacing: 1px;">POINT DA PIZZA</h2>
         <div class="login-grid" id="login-grid"></div>
     </div>
 
@@ -92,7 +88,7 @@
                 <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-cart-arrow-down"></i> Registrar Saída</button>
                 <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Ajustes</button>
-                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none;">SAIR</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">TROCAR USUÁRIO</button>
             </div>
 
             <div class="main-content">
@@ -103,20 +99,20 @@
 
                 <div id="pdv" class="card">
                     <h3>Baixar do Estoque</h3>
-                    <label>Produto:</label>
+                    <label>Selecione o Item:</label>
                     <select id="selProd"></select>
                     <label>Quantidade:</label>
-                    <input type="number" id="qSai" value="1">
+                    <input type="number" id="qSai" value="1" step="0.1">
                     <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR SAÍDA</button>
                 </div>
 
                 <div id="estoque" class="card">
-                    <h3>Cadastrar Novo</h3>
+                    <h3>Adicionar Produto</h3>
                     <input type="text" id="iNome" placeholder="Nome">
                     <input type="number" id="iQtd" placeholder="Quantidade">
                     <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     <input type="file" id="iFoto">
-                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR</button>
+                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR NA NUVEM</button>
 
                     <div class="table-res">
                         <table>
@@ -129,9 +125,21 @@
                 <div id="config" class="card">
                     <h3>Gerir Equipe</h3>
                     <input type="text" id="fNome" placeholder="Nome">
+                    <select id="fCargo">
+                        <option>Pizzaiolo</option>
+                        <option>Auxiliar</option>
+                        <option>Patrão</option>
+                    </select>
                     <input type="password" id="fSenha" placeholder="Senha">
                     <input type="file" id="fFoto">
-                    <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">ADICIONAR</button>
+                    <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">ADICIONAR FUNCIONÁRIO</button>
+                    
+                    <div class="table-res">
+                        <table style="margin-top:20px;">
+                            <thead><tr><th>Foto</th><th>Nome</th><th>Cargo</th></tr></thead>
+                            <tbody id="corpo-equipe"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -161,6 +169,7 @@
                 db.ref('equipe').set(equipe);
             }
             renderLogin();
+            renderEquipeTabela();
         });
         db.ref('estoque').on('value', snap => {
             estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
@@ -173,6 +182,7 @@
             <div class="login-card" onclick="entrar(${f.id})">
                 <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
                 <div style="font-size:0.9rem; font-weight:bold;">${f.nome}</div>
+                <span>${f.cargo || 'Funcionário'}</span>
             </div>
         `).join('');
     }
@@ -186,6 +196,7 @@
             document.getElementById('user-info').innerHTML = `
                 <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
                 <div style="font-weight:bold; margin-top:5px;">${f.nome}</div>
+                <div class="badge">${f.cargo || 'Equipe'}</div>
             `;
         } else if(p !== null) alert("Senha Errada!");
     }
@@ -194,17 +205,27 @@
         document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
             <tr>
                 <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
-                <td>${i.nome}</td>
+                <td><strong>${i.nome}</strong></td>
                 <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade || ''}</td>
                 <td><button onclick="ajustar(${i.id}, 1)">+</button> <button onclick="ajustar(${i.id}, -1)">-</button></td>
             </tr>
         `).join('');
-        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (${i.qtd})</option>`).join('');
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd})</option>`).join('');
         
         const faltas = estoque.filter(i => i.qtd < 5);
         document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
-            `<div style="color:red; font-weight:bold;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : 
-            `<div style="color:green;">✅ Tudo OK!</div>`;
+            `<div style="background:#ffcccc; padding:15px; border-radius:8px; color:red; font-weight:bold;">⚠️ Repor urgente: ${faltas.map(f => f.nome).join(', ')}</div>` : 
+            `<div style="background:#d4edda; padding:15px; border-radius:8px; color:green; text-align:center;">✅ Estoque em ordem!</div>`;
+    }
+
+    function renderEquipeTabela() {
+        document.getElementById('corpo-equipe').innerHTML = equipe.map(f => `
+            <tr>
+                <td><img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="img-tab"></td>
+                <td>${f.nome}</td>
+                <td>${f.cargo}</td>
+            </tr>
+        `).join('');
     }
 
     function ajustar(id, v) {
@@ -224,6 +245,7 @@
         const q = parseFloat(document.getElementById('iQtd').value);
         const u = document.getElementById('iUnid').value;
         const f = document.getElementById('iFoto').files[0];
+        if(!n || isNaN(q)) return alert("Preencha os campos!");
         const add = (img) => {
             estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
             db.ref('estoque').set(estoque);
@@ -236,11 +258,13 @@
     function addFunc() {
         const n = document.getElementById('fNome').value;
         const s = document.getElementById('fSenha').value;
+        const c = document.getElementById('fCargo').value;
         const f = document.getElementById('fFoto').files[0];
+        if(!n || !s) return alert("Preencha nome e senha!");
         const add = (img) => {
-            equipe.push({id: Date.now(), nome: n, senha: s, foto: img});
+            equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img});
             db.ref('equipe').set(equipe);
-            alert("Membro Adicionado!");
+            alert("Novo membro adicionado!");
         };
         if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
         else add(null);
