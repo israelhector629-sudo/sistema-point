@@ -12,43 +12,24 @@
     <style>
         :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-        
         body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* LOGIN */
-        #login-screen { 
-            position: fixed; inset: 0; background: var(--secondary); 
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: white; padding: 20px; transition: 0.5s;
-        }
-        
+        #login-screen { position: fixed; inset: 0; background: var(--secondary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; transition: 0.5s; }
         .login-header { text-align: center; margin-bottom: 20px; }
-        .login-header img { 
-            width: 150px !important; 
-            height: 150px !important; 
-            border-radius: 50%; 
-            border: 4px solid white; 
-            margin-bottom: 10px; 
-            object-fit: cover; 
-            background: white; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-        }
-
+        .login-header img { width: 150px !important; height: 150px !important; border-radius: 50%; border: 4px solid white; margin-bottom: 10px; object-fit: cover; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 50vh; padding: 10px; }
         .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); }
         .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
         .login-card span { display: block; font-size: 0.75rem; color: #bdc3c7; }
 
-        /* APP ESTRUTURA */
+        /* APP */
         #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
         .header { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        
         .logo-top { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .logo-top img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; background: white; }
-
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        /* SIDEBAR */
         .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
         .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -58,22 +39,17 @@
         .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; }
         .menu-btn.active { background: var(--primary); color: white; }
 
-        /* CONTEÚDO */
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; margin-bottom: 15px; }
         .card.active { display: block; }
-
-        h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--secondary); border-left: 4px solid var(--primary); padding-left: 10px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
 
-        /* TABELA HISTÓRICO */
         .table-res { width: 100%; overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; min-width: 400px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .img-tab { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .btn-del { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; height: 100%; }
@@ -107,56 +83,58 @@
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-brand">
                     <h3 style="margin:0; border:none; color:white; font-size: 1.2rem;">POINT DA PIZZA</h3>
-                    <small style="opacity:0.8">Gestão Profissional</small>
                 </div>
                 <div class="user-info" id="user-info"></div>
                 <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
-                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-cart-arrow-down"></i> Registrar Saída</button>
+                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
                 <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Ajustes</button>
-                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">SAIR / TROCAR USUÁRIO</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold;">SAIR</button>
             </div>
 
             <div class="main-content">
                 <div id="inicio" class="card active">
-                    <h3>Alertas de Estoque</h3>
+                    <h3>Alertas Rápidos</h3>
                     <div id="area-alertas"></div>
                 </div>
 
                 <div id="pdv" class="card">
-                    <h3>Baixar do Estoque</h3>
+                    <h3>Registrar Saída</h3>
                     <select id="selProd"></select>
                     <input type="number" id="qSai" value="1" step="0.1">
-                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR SAÍDA</button>
+                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR</button>
                 </div>
 
                 <div id="estoque" class="card">
-                    <h3>Adicionar Produto</h3>
-                    <input type="text" id="iNome" placeholder="Nome do Produto">
-                    <input type="number" id="iQtd" placeholder="Quantidade">
+                    <h3>Gestão de Insumos</h3>
+                    <input type="text" id="iNome" placeholder="Item">
+                    <input type="number" id="iQtd" placeholder="Qtd">
                     <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     <input type="file" id="iFoto">
-                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR NO ESTOQUE</button>
-                    
-                    <h3 style="margin-top:30px; border:none;">Inventário Atual</h3>
+                    <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR / SOMAR</button>
                     <div class="table-res">
                         <table>
-                            <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
+                            <thead><tr><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
                             <tbody id="corpo-estoque-lista"></tbody>
                         </table>
                     </div>
                 </div>
 
+                <div id="relatorio" class="card">
+                    <h3>Fechamento de Turno</h3>
+                    <p style="margin-bottom:15px; color:#666;">Clique no botão abaixo para enviar o resumo do estoque e a lista de compras para o patrão.</p>
+                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO WHATSAPP</button>
+                </div>
+
                 <div id="config" class="card">
-                    <h3>Gerir Equipe</h3>
+                    <h3>Equipe</h3>
                     <input type="text" id="fNome" placeholder="Nome">
                     <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select>
                     <input type="password" id="fSenha" placeholder="Senha">
                     <input type="file" id="fFoto">
-                    <button class="btn-acao" style="background:var(--secondary); margin-bottom: 20px;" onclick="addFunc()">ADICIONAR</button>
-                    
-                    <h3 style="border:none; margin-top:20px;">Remover Funcionário</h3>
-                    <div id="lista-equipe-del"></div>
+                    <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">ADICIONAR</button>
+                    <div id="lista-equipe-del" style="margin-top:20px;"></div>
                 </div>
             </div>
         </div>
@@ -176,16 +154,12 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let estoque = []; let equipe = [];
-    let idLogado = null;
+    let idLogado = null; let nomeLogado = "";
 
     function inicializar() {
         db.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
-            if(equipe.length === 0) {
-                equipe = [{id: 1, nome: 'Admin', senha: '5616', cargo: 'Patrão'}];
-                db.ref('equipe').set(equipe);
-            }
             renderLogin();
             renderListaEquipe();
         });
@@ -209,60 +183,48 @@
         const f = equipe.find(x => x.id === id);
         const p = prompt(`Senha para ${f.nome}:`);
         if(p === (f.senha || "5616")) {
-            idLogado = id;
+            idLogado = id; nomeLogado = f.nome;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
-            document.getElementById('user-info').innerHTML = `
-                <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-                <div style="font-weight:bold;">${f.nome}</div>
-                <div class="badge">${f.cargo}</div>
-            `;
+            document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
         } else if(p !== null) alert("Senha Errada!");
     }
 
-    function renderListaEquipe() {
-        const container = document.getElementById('lista-equipe-del');
-        if(!container) return;
-        container.innerHTML = equipe.map(f => `
-            <div class="list-item">
-                <span><strong>${f.nome}</strong> (${f.cargo})</span>
-                <button class="btn-del" onclick="removerFunc(${f.id})"><i class="fas fa-trash"></i></button>
-            </div>
-        `).join('');
-    }
-
-    function removerFunc(id) {
-        if(id === idLogado) return alert("Você não pode remover a si mesmo logado!");
-        if(confirm("Remover funcionário?")) {
-            const novaEquipe = equipe.filter(f => f.id !== id);
-            db.ref('equipe').set(novaEquipe);
-        }
-    }
-
     function renderEstoque() {
-        // TELA DE SAÍDA (SELECT)
-        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd})</option>`).join('');
-        
-        // ALERTAS INÍCIO
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (${i.qtd})</option>`).join('');
         const faltas = estoque.filter(i => i.qtd < 5);
-        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? 
-            `<div style="color:red; background:#ffcccc; padding:10px; border-radius:5px;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo OK!</div>`;
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 ? `<div style="color:red; font-weight:bold;">⚠️ Repor: ${faltas.map(f => f.nome).join(', ')}</div>` : `<div>✅ Tudo em dia!</div>`;
 
-        // LISTA VISÍVEL NO ESTOQUE (HISTÓRICO)
         document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
             <tr>
-                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
                 <td><strong>${i.nome}</strong></td>
                 <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade}</td>
-                <td><button onclick="removerItemEstoque(${i.id})" style="color:red; background:none; border:none; font-size:1.2rem;"><i class="fas fa-trash-alt"></i></button></td>
+                <td><button onclick="removerItemEstoque(${i.id})"><i class="fas fa-trash"></i></button></td>
             </tr>
         `).join('');
     }
 
+    function enviarRelatorio() {
+        const faltas = estoque.filter(i => i.qtd < 5);
+        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*%0A%0A`;
+        msg += `*Responsável:* ${nomeLogado}%0A`;
+        msg += `*Data:* ${new Date().toLocaleDateString()}%0A%0A`;
+        
+        if(faltas.length > 0) {
+            msg += `⚠️ *ITENS PARA COMPRAR:*%0A`;
+            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})%0A`);
+        } else {
+            msg += `✅ *ESTOQUE:* Tudo em ordem!%0A`;
+        }
+        
+        msg += `%0A_Enviado via Sistema Point_`;
+        window.open(`https://wa.me/55993375616?text=${msg}`);
+    }
+
     function removerItemEstoque(id) {
-        if(confirm("Excluir este item do estoque definitivamente?")) {
-            const novoEstoque = estoque.filter(i => i.id !== id);
-            db.ref('estoque').set(novoEstoque);
+        if(confirm("Excluir item?")) {
+            estoque = estoque.filter(i => i.id !== id);
+            db.ref('estoque').set(estoque);
         }
     }
 
@@ -270,7 +232,7 @@
         const id = document.getElementById('selProd').value;
         const q = parseFloat(document.getElementById('qSai').value);
         const i = estoque.find(x => x.id == id);
-        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Baixa efetuada!"); }
+        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Saída ok!"); }
     }
 
     function salvarItem() {
@@ -278,30 +240,31 @@
         const q = parseFloat(document.getElementById('iQtd').value);
         const u = document.getElementById('iUnid').value;
         const f = document.getElementById('iFoto').files[0];
-        
-        if(!n || isNaN(q)) return alert("Preencha Nome e Quantidade!");
+        if(!n || isNaN(q)) return alert("Dados incompletos!");
 
-        // LÓGICA PARA NÃO DUPLICAR: Verifica se já existe um item com esse nome
-        const itemExistente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
-
-        const finalizar = (img) => {
-            if(itemExistente) {
-                // SOMA AO INVÉS DE DUPLICAR
-                itemExistente.qtd += q;
-                if(img) itemExistente.foto = img; // Atualiza a foto se enviar uma nova
-                alert(`Somado ao estoque existente: ${itemExistente.nome}`);
-            } else {
-                // CRIA NOVO SE NÃO EXISTIR
-                estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
-                alert("Novo item cadastrado!");
-            }
+        const existente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
+        const final = (img) => {
+            if(existente) { existente.qtd += q; } 
+            else { estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img}); }
             db.ref('estoque').set(estoque);
-            document.getElementById('iNome').value = '';
-            document.getElementById('iQtd').value = '';
+            alert("Estoque atualizado!");
         };
+        if(f) { const r = new FileReader(); r.onload = e => final(e.target.result); r.readAsDataURL(f); }
+        else final(null);
+    }
 
-        if(f) { const r = new FileReader(); r.onload = e => finalizar(e.target.result); r.readAsDataURL(f); }
-        else finalizar(null);
+    function renderListaEquipe() {
+        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
+            <div class="list-item"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" class="btn-del">Remover</button></div>
+        `).join('');
+    }
+
+    function removerFunc(id) {
+        if(id === idLogado) return alert("Não pode se remover logado!");
+        if(confirm("Remover da equipe?")) {
+            equipe = equipe.filter(f => f.id !== id);
+            db.ref('equipe').set(equipe);
+        }
     }
 
     function addFunc() {
@@ -312,9 +275,7 @@
         const add = (img) => {
             equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img});
             db.ref('equipe').set(equipe);
-            alert("Adicionado!");
-            document.getElementById('fNome').value = '';
-            document.getElementById('fSenha').value = '';
+            alert("Membro adicionado!");
         };
         if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
         else add(null);
@@ -335,7 +296,7 @@
 
     function checkAdmin(id, btn) {
         if(prompt("Senha Master:") === "5616") tab(id, btn);
-        else alert("Acesso Negado!");
+        else alert("Negado!");
     }
 </script>
 </body>
