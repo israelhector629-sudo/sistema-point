@@ -118,7 +118,22 @@
         if(f) { const r = new FileReader(); r.onload = e => fin(e.target.result); r.readAsDataURL(f); } else fin(null);
     }
     function removerItemEstoque(id) { if(confirm("Apagar item?")) { const i = estoque.find(x => x.id === id); registrarLog(`${nomeLogado} APAGOU ${i.nome}`); estoque = estoque.filter(x => x.id !== id); db.ref('estoque').set(estoque); } }
-    function enviarRelatorio() { const f = estoque.filter(i => i.qtd < 5); let m = `🍕 *POINT DA PIZZA*%0A*Responsável:* ${nomeLogado}%0A`; if(f.length > 0) { m += `%0A⚠️ *COMPRAR:*%0A${f.map(x => `- ${x.nome} (${x.qtd} ${x.unidade})`).join('%0A')}`; } else { m += `%0A✅ Estoque OK!`; } window.open(`https://wa.me/55993375616?text=${m}`); }
+    
+    // FUNÇÃO CORRIGIDA PARA O WHATSAPP
+    function enviarRelatorio() {
+        const f = estoque.filter(i => i.qtd < 5);
+        let m = `🍕 *POINT DA PIZZA*%0A*Responsável:* ${nomeLogado}%0A`;
+        if(f.length > 0) {
+            m += `%0A⚠️ *COMPRAR:*%0A${f.map(x => `- ${x.nome} (${x.qtd} ${x.unidade})`).join('%0A')}`;
+        } else {
+            m += `%0A✅ Estoque OK!`;
+        }
+        
+        // Link em formato HTTPS para funcionar em qualquer celular
+        const url = `https://api.whatsapp.com/send?phone=55993375616&text=${m}`;
+        window.open(url, '_blank');
+    }
+
     function renderListaEquipe() { document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `<div class="list-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" style="color:red; background:none; border:none;">Remover</button></div>`).join(''); }
     function removerFunc(id) { if(id === idLogado) return alert("Não pode se remover!"); if(confirm("Remover da equipe?")) { equipe = equipe.filter(f => f.id !== id); db.ref('equipe').set(equipe); } }
     function addFunc() { const n = document.getElementById('fNome').value; const s = document.getElementById('fSenha').value; const c = document.getElementById('fCargo').value; const f = document.getElementById('fFoto').files[0]; const add = (img) => { equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img}); db.ref('equipe').set(equipe); alert("Membro adicionado!"); }; if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); } else add(null); }
