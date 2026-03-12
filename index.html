@@ -1,169 +1,229 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Point da Pizza - App</title>
+    <title>Sistema de Controlo - Point</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        /* AQUI ESTAVA O ERRO: Faltava o --success (Verde) */
-        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; }
-        
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background-color: var(--bg); color: #333; display: flex; height: 100vh; overflow: hidden; }
+        :root { 
+            --primary: #e74c3c; 
+            --secondary: #2c3e50; 
+            --success: #27ae60; 
+            --bg-color: #f4f7f6; 
+            --text-color: #333; 
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        /* LOGIN */
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+
+        /* ANIMAÇÕES */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulseAlert { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43, 0.4); } 70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(192,57,43, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(192,57,43, 0); } }
+
+        /* TELA DE LOGIN */
         #login-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%); 
+            background: linear-gradient(135deg, var(--secondary) 0%, #1a252f 100%); 
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: white; padding: 20px; transition: 0.5s;
+            color: white; transition: opacity 0.6s ease; padding: 20px; text-align: center; 
         }
-        .login-header img { width: 140px; height: 140px; border-radius: 50%; border: 4px solid white; margin-bottom: 15px; object-fit: cover; background: white; }
-        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; }
-        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; width: 130px; }
-        .login-card:active { transform: scale(0.95); background: var(--primary); }
-        .login-card img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        
+        .login-header img { 
+            width: 160px; height: 160px; object-fit: cover; border-radius: 50%; 
+            border: 5px solid white; margin-bottom: 20px; background-color: white;
+            animation: float 4s ease-in-out infinite;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .login-grid { 
+            display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; 
+            max-width: 800px; animation: slideUp 0.8s ease-out; 
+        }
+
+        .login-card { 
+            background: rgba(255,255,255,0.08); padding: 25px 15px; border-radius: 20px; 
+            text-align: center; cursor: pointer; transition: var(--transition); 
+            width: 150px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+        }
+
+        .login-card:hover { 
+            background: var(--primary); transform: translateY(-10px) scale(1.05); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4); border-color: white;
+        }
 
         /* ESTRUTURA APP */
-        #app-container { display: none; width: 100%; height: 100vh; flex-direction: column; }
+        #app-container { display: none; width: 100%; height: 100vh; flex-direction: column; animation: fadeIn 1s; }
         
-        /* HEADER MOBILE FIXED */
-        .mobile-header { 
-            display: flex; background: var(--primary); color: white; padding: 15px 20px; 
-            justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 900;
+        .sidebar { 
+            background-color: var(--secondary); color: white; width: 270px; 
+            display: flex; flex-direction: column; transition: var(--transition); 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
         }
-        .mobile-header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        .btn-menu { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
-        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
-        
-        /* SIDEBAR (MENU LATERAL) */
-        .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
-        
-        .user-profile { text-align: center; padding: 20px 10px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .user-profile img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 5px; }
+        .menu-btn { 
+            background: none; border: none; color: #bdc3c7; padding: 15px 25px; 
+            text-align: left; font-size: 1rem; cursor: pointer; transition: var(--transition); 
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            position: relative; overflow: hidden;
+        }
 
-        .menu-btn { background: none; border: none; color: #ccc; padding: 18px 20px; text-align: left; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .menu-btn i { width: 20px; text-align: center; font-size: 1.1rem; }
-        .menu-btn.active { background: rgba(231, 76, 60, 0.2); color: white; border-left: 4px solid var(--primary); }
+        .menu-btn:hover, .menu-btn.active { color: white; background-color: rgba(255,255,255,0.05); }
+        .menu-btn.active::before { 
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; 
+            width: 5px; background: var(--primary); 
+        }
 
-        /* CONTEÚDO E CARDS */
-        .main-content { flex: 1; padding: 15px; overflow-y: auto; background: var(--bg); -webkit-overflow-scrolling: touch; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: none; margin-bottom: 20px; animation: fade 0.3s; }
-        .card.active { display: block; }
-        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        /* CONTEÚDO */
+        .card { 
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; 
+            display: none; border: 1px solid #edf2f7;
+        }
+        .card.active { display: block; animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* INPUTS E BOTÕES GIGANTES PARA DEDO */
-        h3 { margin-top: 0; color: var(--secondary); font-size: 1.3rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        input, select { width: 100%; padding: 16px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; background: #fafafa; }
-        input:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
-        
-        .btn-acao { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-acao:active { transform: scale(0.98); }
+        .alerta-perigo { 
+            background: linear-gradient(to right, #fff5f5, #fed7d7); 
+            border-left: 8px solid var(--primary); padding: 25px; border-radius: 12px; 
+            color: #c53030; animation: pulseAlert 3s infinite; 
+        }
 
-        /* TABELA DESLIZANTE (SWIPE) */
-        .table-res { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th { background: #f8f9fa; color: #555; padding: 15px; text-align: left; font-size: 0.9rem; }
-        td { padding: 12px 15px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 1rem; }
-        .img-tab { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
-        .btn-pequeno { padding: 8px 15px; border: none; border-radius: 5px; font-size: 1.2rem; font-weight: bold; }
+        /* TABELAS E BOTÕES */
+        button.success-btn { 
+            background: var(--success); color: white; border: none; padding: 18px; 
+            border-radius: 12px; cursor: pointer; font-size: 1.1rem; transition: var(--transition); 
+            width: 100%; font-weight: bold; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        button.success-btn:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4); }
+        button.success-btn:active { transform: scale(0.98); }
 
-        /* COMPORTAMENTO MOBILE */
+        .img-preview { 
+            width: 50px; height: 50px; object-fit: cover; border-radius: 10px; 
+            transition: transform 0.3s; cursor: zoom-in;
+        }
+        .img-preview:hover { transform: scale(2.5); z-index: 10; position: relative; }
+
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; height: 100%; }
+            .sidebar { position: fixed; left: -280px; height: 100vh; z-index: 1002; }
             .sidebar.open { left: 0; }
-            .sidebar-overlay.active { display: block; }
-            .mobile-header { display: flex; }
-        }
-        @media (min-width: 769px) {
-            .mobile-header { display: none; }
         }
     </style>
 </head>
 <body onload="inicializar()">
 
-    <div id="login-screen">
-        <div class="login-header">
-            <img src="logo.jpg" onerror="this.src='WhatsApp Image 2026-03-06 at 04.57.24.jpeg'" alt="Logo">
-            <h2>POINT DA PIZZA</h2>
-            <p id="load-msg">A sincronizar...</p>
-        </div>
-        <div class="login-grid" id="login-grid"></div>
+<div id="login-screen">
+    <div class="login-header">
+        <img src="WhatsApp Image 2026-03-06 at 04.57.24.jpeg" alt="Logo">
+        <h1 style="font-size: 2.5rem; margin-top: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">POINT</h1>
+        <p id="loading-text" style="font-weight: 300;">Sincronizando com a Nuvem...</p>
+    </div>
+    <div class="login-grid" id="login-grid"></div>
+</div>
+
+<div id="app-container">
+    <div class="mobile-header" style="display: flex; background: var(--primary); padding: 15px; color: white; justify-content: space-between; align-items: center;">
+        <h2 style="margin:0; font-size: 1.1rem;"><i class="fas fa-pizza-slice"></i> POINT DA PIZZA</h2>
+        <button onclick="toggleMobileMenu()" style="background:none; border:none; color:white; font-size:1.4rem;"><i class="fas fa-bars"></i></button>
     </div>
 
-    <div id="app-container">
-        <div class="mobile-header">
-            <h2><i class="fas fa-pizza-slice"></i> POINT</h2>
-            <button class="btn-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    <div class="app-body">
+        <div class="sidebar-overlay" onclick="toggleMobileMenu()" id="overlay"></div>
+
+        <div class="sidebar" id="sidebarMenu">
+            <div style="padding: 25px 20px;">
+                <h2 style="margin:0; color: var(--primary);">POINT</h2>
+                <p style="margin:0; font-size: 0.75rem; color: #7f8c8d;">Av. Regite Arabe 946</p>
+            </div>
+            
+            <div class="user-profile" id="perfilLogado"></div>
+            
+            <div style="flex: 1;">
+                <button class="menu-btn active" onclick="showTab('inicio', this)"><i class="fas fa-home"></i> Início</button>
+                <button class="menu-btn" onclick="showTab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
+                <button class="menu-btn" onclick="showTab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="checkPasswordAndShow('funcionarios', this)"><i class="fas fa-users-cog"></i> Gerir Equipa</button>
+                <button class="menu-btn" onclick="showTab('relatorios', this)"><i class="fas fa-file-invoice"></i> Relatórios</button>
+            </div>
+            
+            <button class="menu-btn" style="background: #c0392b; color: white; margin-top: auto;" onclick="fazerLogout()">
+                <i class="fas fa-sign-out-alt"></i> Trocar Utilizador
+            </button>
         </div>
 
-        <div class="app-body">
-            <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
-
-            <div class="sidebar" id="sidebar">
-                <div id="perfil-lateral" class="user-profile"></div>
-                
-                <div style="flex: 1; overflow-y: auto;">
-                    <button class="menu-btn active" onclick="showTab('inicio', this)"><i class="fas fa-bell"></i> Avisos</button>
-                    <button class="menu-btn" onclick="showTab('pdv', this)"><i class="fas fa-cart-arrow-down"></i> Lançar Saída</button>
-                    <button class="menu-btn" onclick="showTab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
-                    <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-users-cog"></i> Equipe</button>
-                </div>
-                
-                <button onclick="location.reload()" style="padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; font-size:1rem;"><i class="fas fa-sign-out-alt"></i> SAIR</button>
+        <div class="main-content">
+            <div id="inicio" class="card active">
+                <h3><i class="fas fa-bullhorn"></i> Mural de Avisos</h3>
+                <div id="area-alerta-reposicao"></div>
             </div>
 
-            <div class="main-content">
-                <div id="inicio" class="card active">
-                    <h3>Status Diário</h3>
-                    <div id="area-alertas"></div>
+            <div id="pdv" class="card">
+                <h3><i class="fas fa-cart-arrow-down"></i> Registrar Consumo</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Qual insumo saiu?</label><select id="pdvProduto"></select></div>
+                    <div class="form-group"><label>Quantidade:</label><input type="number" id="pdvQtd" value="1" step="0.1"></div>
                 </div>
+                <button class="success-btn" onclick="registrarSaida()"><i class="fas fa-check"></i> CONFIRMAR NA NUVEM</button>
+                <div id="vendaAlert" class="alert">Atualizado com sucesso!</div>
+            </div>
 
-                <div id="pdv" class="card">
-                    <h3>Registrar Saída</h3>
-                    <select id="selProd"></select>
-                    <input type="number" id="qSai" value="1" placeholder="Quantidade">
-                    <button class="btn-acao" style="background:var(--success); color:white;" onclick="baixar()"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
-                </div>
-
-                <div id="estoque" class="card">
-                    <h3>Cadastrar Produto</h3>
-                    <input type="text" id="iNome" placeholder="Nome do Item">
-                    <div style="display:flex; gap:10px;">
-                        <input type="number" id="iQtd" placeholder="Qtd">
-                        <select id="iUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
-                    </div>
-                    <input type="file" id="iFoto">
-                    <button class="btn-acao" onclick="salvarItem()"><i class="fas fa-cloud-upload-alt"></i> SALVAR</button>
-
-                    <h3 style="margin-top:25px;">Tabela (Deslize 👉)</h3>
-                    <div class="table-res">
-                        <table>
-                            <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
-                            <tbody id="corpo-estoque"></tbody>
-                        </table>
+            <div id="estoque" class="card">
+                <h3><i class="fas fa-plus"></i> Novo Item</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Nome:</label><input type="text" id="novoItemNome"></div>
+                    <div class="form-group"><label>Qtd Inicial:</label><input type="number" id="novoItemQtd" value="0"></div>
+                    <div class="form-group">
+                        <label>Unidade:</label>
+                        <select id="novoItemUnid"><option>Kg</option><option>Un</option><option>Pct</option></select>
                     </div>
                 </div>
-
-                <div id="config" class="card">
-                    <h3>Novo Funcionário</h3>
-                    <input type="text" id="fNome" placeholder="Nome">
-                    <input type="password" id="fSenha" placeholder="Senha">
-                    <input type="file" id="fFoto">
-                    <button class="btn-acao" style="background:var(--secondary)" onclick="addFunc()"><i class="fas fa-user-plus"></i> ADICIONAR</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Foto do Produto:</label><input type="file" id="novoItemFoto" accept="image/*"></div>
+                    <div class="form-group"><label>Categoria:</label><select id="novoItemCat"><option>Pizzas</option><option>Outros</option></select></div>
                 </div>
+                <button class="success-btn" style="background: var(--secondary);" onclick="prepararCadastroItem()">SALVAR PRODUTO</button>
+
+                <h3 style="margin-top: 40px;"><i class="fas fa-table"></i> Inventário em Tempo Real</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Foto</th><th>Item</th><th>Qtd</th><th>Ações</th></tr></thead>
+                        <tbody id="tabela-estoque-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="funcionarios" class="card">
+                <h3><i class="fas fa-user-plus"></i> Adicionar Colaborador</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Nome:</label><input type="text" id="funcNome"></div>
+                    <div class="form-group"><label>Senha (4 dígitos):</label><input type="password" id="funcSenha"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cargo:</label><select id="funcCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Patrão</option></select></div>
+                    <div class="form-group"><label>Foto Perfil:</label><input type="file" id="funcFoto" accept="image/*"></div>
+                </div>
+                <button class="success-btn" onclick="prepararCadastroFuncionario()">CADASTRAR</button>
+
+                <h3 style="margin-top: 30px;">Equipa Registada</h3>
+                <div class="table-responsive"><table id="tabela-equipe-body"></table></div>
+            </div>
+
+            <div id="relatorios" class="card">
+                <h3><i class="fas fa-print"></i> Relatórios de Turno</h3>
+                <button class="whatsapp-btn" onclick="enviarRelatorioWhatsApp()">ENVIAR FECHAMENTO AO PATRÃO</button>
             </div>
         </div>
     </div>
+</div>
 
 <script>
+    // Configurações do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
@@ -175,145 +235,206 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let estoque = []; let equipe = [];
+    const database = firebase.database();
+
+    let estoque = [];
+    let equipe = [];
+    let idFuncionarioLogado = null;
+
+    function toggleMobileMenu() {
+        document.getElementById('sidebarMenu').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
     function inicializar() {
-        db.ref('equipe').on('value', snap => {
+        database.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
             if(equipe.length === 0) {
-                equipe = [{id: 1, nome: 'Admin', senha: '5616', cargo: 'Patrão'}];
-                db.ref('equipe').set(equipe);
+                equipe = [{id: 1, nome: 'Admin', cargo: 'Patrão', senha: '5616', foto: null}];
+                database.ref('equipe').set(equipe);
             }
-            document.getElementById('load-msg').innerText = "Toque no seu perfil:";
+            document.getElementById('loading-text').innerText = "Toque no seu perfil para entrar";
             renderLogin();
+            if(idFuncionarioLogado) {
+                atualizarTabelaEquipe();
+                atualizarPerfilSidebar();
+            }
         });
 
-        db.ref('estoque').on('value', snap => {
-            estoque = snap.val() ? Object.values(snap.val()).filter(i => i != null) : [];
-            renderTabelas();
+        database.ref('estoque').on('value', snap => {
+            const data = snap.val();
+            estoque = data ? Object.values(data).filter(i => i != null) : [];
+            if(idFuncionarioLogado) atualizarTabelaEstoque();
         });
     }
 
     function renderLogin() {
-        document.getElementById('login-grid').innerHTML = equipe.map(f => `
-            <div class="login-card" onclick="entrar(${f.id})">
-                <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-                <div style="font-weight:bold; font-size:1.1rem;">${f.nome}</div>
-                <div style="font-size:0.8rem; opacity:0.8">${f.cargo || 'Equipe'}</div>
+        const grid = document.getElementById('login-grid');
+        grid.innerHTML = equipe.map(f => `
+            <div class="login-card" onclick="efetuarLogin(${f.id})">
+                ${f.foto ? `<img src="${f.foto}">` : `<div style="font-size:40px; margin-bottom:10px;"><i class="fas fa-user-circle"></i></div>`}
+                <h3 style="margin:0">${f.nome}</h3>
+                <small style="opacity:0.7">${f.cargo}</small>
             </div>
         `).join('');
     }
 
-    function entrar(id) {
+    function efetuarLogin(id) {
         const f = equipe.find(x => x.id === id);
-        const p = prompt(`Senha para ${f.nome}:`);
-        if(p === (f.senha || "5616")) {
+        const senha = prompt(`Digite a senha de ${f.nome}:`);
+        if(senha === (f.senha || "5616")) {
+            idFuncionarioLogado = id;
             document.getElementById('login-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-container').style.display = 'flex';
-                document.getElementById('perfil-lateral').innerHTML = `
-                    <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-                    <div style="font-weight:bold; font-size:1.2rem;">${f.nome}</div>
-                    <div style="color:var(--primary); font-size:0.9rem;">${f.cargo || 'Equipe'}</div>
-                `;
-            }, 300);
-        } else if(p !== null) alert("Senha errada!");
+                atualizarPerfilSidebar();
+                atualizarTabelaEstoque();
+            }, 600);
+        } else if(senha !== null) alert("Senha errada!");
     }
 
-    function renderTabelas() {
-        document.getElementById('corpo-estoque').innerHTML = estoque.map(i => `
-            <tr>
-                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-tab"></td>
+    function atualizarPerfilSidebar() {
+        const f = equipe.find(x => x.id === idFuncionarioLogado);
+        const div = document.getElementById('perfilLogado');
+        if(f) {
+            div.innerHTML = `
+                <div style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <img src="${f.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
+                    <div style="font-weight:bold; margin-top:5px;">${f.nome}</div>
+                    <div style="font-size:0.7rem; color:var(--primary); text-transform:uppercase;">${f.cargo}</div>
+                </div>
+            `;
+        }
+    }
+
+    function registrarSaida() {
+        const nome = document.getElementById('pdvProduto').value;
+        const qtd = parseFloat(document.getElementById('pdvQtd').value);
+        const item = estoque.find(i => i.nome === nome);
+        if(item && qtd > 0) {
+            item.qtd = Math.max(0, item.qtd - qtd);
+            database.ref('estoque').set(estoque);
+            document.getElementById('vendaAlert').style.display = 'block';
+            setTimeout(() => document.getElementById('vendaAlert').style.display = 'none', 2000);
+        }
+    }
+
+    function ajustarRapido(id, v) {
+        const item = estoque.find(i => i.id === id);
+        if(item) {
+            item.qtd = Math.max(0, item.qtd + v);
+            database.ref('estoque').set(estoque);
+        }
+    }
+
+    function atualizarTabelaEstoque() {
+        const tbody = document.getElementById('tabela-estoque-body');
+        const select = document.getElementById('pdvProduto');
+        
+        tbody.innerHTML = estoque.map(i => `
+            <tr style="animation: fadeIn 0.5s;">
+                <td><img src="${i.foto || 'https://cdn-icons-png.flaticon.com/512/707/707671.png'}" class="img-preview"></td>
                 <td><strong>${i.nome}</strong></td>
-                <td><span style="background:${i.qtd < 5 ? '#ffcccc' : '#d4edda'}; color:${i.qtd < 5 ? 'red' : 'green'}; padding:5px 10px; border-radius:5px; font-weight:bold;">${i.qtd} ${i.unidade}</span></td>
-                <td style="white-space: nowrap;">
-                    <button class="btn-pequeno" style="background:#e0f2fe; color:#0284c7;" onclick="ajustar(${i.id}, 1)">+</button> 
-                    <button class="btn-pequeno" style="background:#ffedd5; color:#ea580c;" onclick="ajustar(${i.id}, -1)">-</button>
+                <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">${i.qtd} ${i.unidade}</td>
+                <td>
+                    <button onclick="ajustarRapido(${i.id}, 1)" style="padding:5px 10px; background:#3498db; color:white; border:none; border-radius:4px;"><i class="fas fa-plus"></i></button>
+                    <button onclick="ajustarRapido(${i.id}, -1)" style="padding:5px 10px; background:#f39c12; color:white; border:none; border-radius:4px;"><i class="fas fa-minus"></i></button>
                 </td>
             </tr>
         `).join('');
 
-        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd})</option>`).join('');
+        select.innerHTML = estoque.map(i => `<option value="${i.nome}">${i.nome} (${i.qtd})</option>`).join('');
         
         const faltas = estoque.filter(i => i.qtd < 5);
+        const areaAlerta = document.getElementById('area-alerta-reposicao');
         if(faltas.length > 0) {
-            document.getElementById('area-alertas').innerHTML = `
-                <div style="background:#fff5f5; border-left:5px solid red; padding:15px; border-radius:8px;">
-                    <h4 style="margin:0 0 10px 0; color:red;"><i class="fas fa-exclamation-circle"></i> COMPRAR URGENTE:</h4>
-                    <ul style="margin:0; padding-left:20px; color:#333; font-weight:bold;">
-                        ${faltas.map(f => `<li>${f.nome}</li>`).join('')}
-                    </ul>
+            areaAlerta.innerHTML = `
+                <div class="alerta-perigo">
+                    <h4><i class="fas fa-exclamation-triangle"></i> REPOSIÇÃO URGENTE</h4>
+                    <p>Itens acabando: ${faltas.map(f => f.nome).join(', ')}</p>
                 </div>`;
         } else {
-            document.getElementById('area-alertas').innerHTML = `<div style="background:#f0fff4; padding:20px; text-align:center; border-radius:8px; color:green; font-weight:bold;"><i class="fas fa-check-circle" style="font-size:2rem;"></i><br>Estoque Perfeito!</div>`;
+            areaAlerta.innerHTML = `<div style="color:green; padding:20px; text-align:center;"><i class="fas fa-check-circle"></i> Tudo em ordem no stock!</div>`;
         }
     }
 
-    function ajustar(id, v) {
-        const i = estoque.find(x => x.id === id);
-        if(i) { i.qtd = Math.max(0, i.qtd + v); db.ref('estoque').set(estoque); }
-    }
+    function prepararCadastroItem() {
+        const nome = document.getElementById('novoItemNome').value;
+        const qtd = parseFloat(document.getElementById('novoItemQtd').value);
+        const unid = document.getElementById('novoItemUnid').value;
+        const cat = document.getElementById('novoItemCat').value;
+        const file = document.getElementById('novoItemFoto').files[0];
 
-    function baixar() {
-        const id = document.getElementById('selProd').value;
-        const q = parseFloat(document.getElementById('qSai').value);
-        const i = estoque.find(x => x.id == id);
-        if(i) { i.qtd = Math.max(0, i.qtd - q); db.ref('estoque').set(estoque); alert("Baixa efetuada!"); }
-    }
+        if(!nome) return alert("Nome é obrigatório");
 
-    function salvarItem() {
-        const n = document.getElementById('iNome').value.trim();
-        const q = parseFloat(document.getElementById('iQtd').value);
-        const u = document.getElementById('iUnid').value;
-        const f = document.getElementById('iFoto').files[0];
-        if(!n || isNaN(q)) return alert("Preencha Nome e Quantidade!");
-
-        const existe = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
-        if(existe) {
-            existe.qtd += q; db.ref('estoque').set(estoque); alert("Quantidade somada!");
-        } else {
-            const add = (img) => {
-                estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u, foto: img});
-                db.ref('estoque').set(estoque); alert("Cadastrado com sucesso!");
-            };
-            if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); }
-            else add(null);
-        }
-    }
-
-    function addFunc() {
-        const n = document.getElementById('fNome').value;
-        const s = document.getElementById('fSenha').value;
-        const f = document.getElementById('fFoto').files[0];
-        if(!n || !s) return alert("Preencha Nome e Senha!");
-        const addF = (img) => {
-            equipe.push({id: Date.now(), nome: n, senha: s, foto: img, cargo: 'Auxiliar'});
-            db.ref('equipe').set(equipe); alert("Funcionário adicionado!");
+        const salvar = (img) => {
+            const novoId = Date.now();
+            estoque.push({id: novoId, nome, qtd, unidade: unid, categoria: cat, foto: img});
+            database.ref('estoque').set(estoque);
+            alert("Guardado com sucesso!");
         };
-        if(f) { const r = new FileReader(); r.onload = e => addF(e.target.result); r.readAsDataURL(f); }
-        else addF(null);
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = e => salvar(e.target.result);
+            reader.readAsDataURL(file);
+        } else salvar(null);
     }
 
-    function toggleMenu() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebar-overlay').classList.toggle('active');
-    }
-
-    function showTab(t, b) {
+    function showTab(id, btn) {
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.getElementById(t).classList.add('active');
-        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
-        b.classList.add('active');
-        if(window.innerWidth <= 768) toggleMenu(); // Fecha o menu automaticamente no celular
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+        if(window.innerWidth < 768) toggleMobileMenu();
     }
 
-    function checkAdmin(t, b) {
-        if(prompt("Senha do Patrão:") === "5616") showTab(t, b);
+    function checkPasswordAndShow(id, btn) {
+        const s = prompt("Senha de Gerência:");
+        if(s === "5616") showTab(id, btn);
         else alert("Acesso negado!");
     }
+
+    function fazerLogout() { location.reload(); }
+
+    function enviarRelatorioWhatsApp() {
+        const f = equipe.find(x => x.id === idFuncionarioLogado);
+        const texto = `🍕 *POINT DA PIZZA - RELATÓRIO*%0AOperador: ${f.nome}%0AStatus: Stock Atualizado.`;
+        window.open(`https://wa.me/55993375616?text=${texto}`);
+    }
+
+    function atualizarTabelaEquipe() {
+        const tbody = document.getElementById('tabela-equipe-body');
+        tbody.innerHTML = equipe.map(f => `
+            <tr>
+                <td><img src="${f.foto || ''}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
+                <td>${f.nome}</td>
+                <td>${f.cargo}</td>
+            </tr>
+        `).join('');
+    }
+
+    function prepararCadastroFuncionario() {
+        const nome = document.getElementById('funcNome').value;
+        const senha = document.getElementById('funcSenha').value;
+        const cargo = document.getElementById('funcCargo').value;
+        const file = document.getElementById('funcFoto').files[0];
+
+        const salvar = (img) => {
+            equipe.push({id: Date.now(), nome, senha, cargo, foto: img});
+            database.ref('equipe').set(equipe);
+            alert("Equipa atualizada!");
+        };
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = e => salvar(e.target.result);
+            reader.readAsDataURL(file);
+        } else salvar(null);
+    }
+
 </script>
 </body>
 </html>
