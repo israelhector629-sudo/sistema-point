@@ -1,59 +1,194 @@
-<div class="container">
-    <div id="lista-estoque">
-        </div>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Point da Pizza - Gestão Profissional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+    <style>
+        :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --success: #2ecc71; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg); }
 
-    <div class="card-estoque">
-        <h4><i class="fas fa-history"></i> Histórico de Movimentação</h4>
-        <div id="lista-historico" style="margin-top: 15px; font-size: 13px; max-height: 200px; overflow-y: auto;">
-            <p style="color: #999;">Nenhuma movimentação hoje...</p>
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 50px 20px; }
+        .sidebar.open { left: 0; }
+        .user-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; object-fit: cover; }
+
+        .container { padding: 15px; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        /* ESTOQUE */
+        .progress-bar { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: var(--success); transition: 0.4s; }
+        .controls { display: flex; gap: 8px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-plus { background: #e8f5e9; color: #2e7d32; }
+        .btn-minus { background: #ffebee; color: #c62828; }
+
+        /* HISTÓRICO */
+        .hist-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .hist-user { font-weight: bold; color: var(--dark); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div style="text-align:center; width:100%; max-width:350px;">
+            <img src="logo.jpg.jpeg" style="width:100px; border-radius:50%; margin-bottom:20px;">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="senha" placeholder="Senha">
+            <button class="btn" style="background:var(--primary); color:white; width:100%; margin-top:10px;" onclick="fazerLogin()">ENTRAR</button>
         </div>
     </div>
-</div>
 
-<script>
-    // ... (firebaseConfig igual)
+    <div id="app-content" style="display:none">
+        <header>
+            <i class="fas fa-bars" onclick="toggleMenu()"></i>
+            <h3>POINT DA PIZZA</h3>
+            <i class="fas fa-sync" onclick="configuracaoInicial()" style="font-size: 18px; opacity: 0.5;"></i>
+        </header>
 
-    // FUNÇÃO PARA ALTERAR ESTOQUE E GERAR HISTÓRICO
-    function alterar(nome, qtd) {
-        const usuario = document.getElementById('user-name').innerText;
-        
-        db.ref('estoque/' + nome).transaction(item => {
-            if(item) {
-                item.atual = Math.max(0, item.atual + qtd);
+        <nav class="sidebar" id="sidebar">
+            <div class="user-profile" style="text-align:center">
+                <img src="" id="user-img">
+                <h4 id="user-name">...</h4>
+                <p id="user-status" style="font-size:12px; opacity:0.8"></p>
+            </div>
+            <button class="btn" style="background:rgba(255,255,255,0.1); color:white; width:100%; margin-top:20px;" onclick="sair()">Sair</button>
+        </nav>
+
+        <div class="container">
+            <h4 style="margin-bottom:10px; color:var(--dark)"><i class="fas fa-boxes"></i> Estoque Atual</h4>
+            <div id="lista-estoque"></div>
+
+            <div class="card" style="margin-top:20px">
+                <h4 style="margin-bottom:10px"><i class="fas fa-history"></i> Histórico Recente</h4>
+                <div id="lista-historico"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+            authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+            databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+            projectId: "point-da-pizza-fc5d6",
+            storageBucket: "point-da-pizza-fc5d6.appspot.com",
+            messagingSenderId: "658125716246",
+            appId: "1:658125716246:web:ca129202695923984579d4ba"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert(e.message); }
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                carregarPerfil(user.uid);
+                carregarEstoque();
+                carregarHistorico();
+            } else {
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
             }
-            return item;
-        }).then(() => {
-            // SALVA NO HISTÓRICO
-            db.ref('historico_estoque').push({
-                item: nome,
-                quantidade: qtd > 0 ? "+" + qtd : qtd,
-                usuario: usuario,
-                data: new Date().toLocaleTimeString('pt-BR')
+        });
+
+        function carregarPerfil(uid) {
+            db.ref('usuarios/' + uid).on('value', snap => {
+                const d = snap.val();
+                if(d) {
+                    document.getElementById('user-name').innerText = d.nome;
+                    document.getElementById('user-img').src = d.foto;
+                    document.getElementById('user-status').innerText = d.cargo;
+                }
             });
-        });
-    }
+        }
 
-    // CARREGAR HISTÓRICO NA TELA
-    function carregarHistorico() {
-        db.ref('historico_estoque').limitToLast(10).on('value', snap => {
-            const lista = document.getElementById('lista-historico');
-            lista.innerHTML = "";
-            const dados = snap.val();
-            if(dados) {
-                Object.values(dados).reverse().forEach(h => {
-                    lista.innerHTML += `
-                        <div style="padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                            <span><b>${h.usuario}</b> ${h.quantidade} ${h.item}</span>
-                            <span style="color: #999;">${h.data}</span>
-                        </div>
-                    `;
+        function carregarEstoque() {
+            db.ref('estoque').on('value', snap => {
+                const container = document.getElementById('lista-estoque');
+                container.innerHTML = "";
+                const itens = snap.val();
+                for(let nome in itens) {
+                    const item = itens[nome];
+                    const porcento = (item.atual / item.max) * 100;
+                    container.innerHTML += `
+                        <div class="card">
+                            <div style="display:flex; justify-content:space-between">
+                                <b><i class="${item.icone}"></i> ${nome}</b>
+                                <span>${item.atual} ${item.unidade}</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${porcento}%; background:${porcento < 20 ? '#e74c3c' : '#2ecc71'}"></div></div>
+                            <div class="controls">
+                                <button class="btn btn-minus" onclick="alterar('${nome}', -1)">-1</button>
+                                <button class="btn btn-plus" onclick="alterar('${nome}', 1)">+1</button>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        function carregarHistorico() {
+            db.ref('historico_estoque').limitToLast(10).on('value', snap => {
+                const container = document.getElementById('lista-historico');
+                container.innerHTML = "";
+                const dados = snap.val();
+                if(dados) {
+                    Object.values(dados).reverse().forEach(h => {
+                        container.innerHTML += `
+                            <div class="hist-item">
+                                <span><span class="hist-user">${h.usuario}</span>: ${h.qtd > 0 ? '+'+h.qtd : h.qtd} ${h.item}</span>
+                                <span style="color:#999">${h.hora}</span>
+                            </div>`;
+                    });
+                }
+            });
+        }
+
+        function alterar(nome, qtd) {
+            const user = document.getElementById('user-name').innerText;
+            db.ref('estoque/' + nome).transaction(item => {
+                if(item) item.atual = Math.max(0, item.atual + qtd);
+                return item;
+            }).then(() => {
+                db.ref('historico_estoque').push({
+                    item: nome, qtd: qtd, usuario: user, hora: new Date().toLocaleTimeString('pt-BR')
                 });
-            }
-        });
-    }
+            });
+        }
 
-    // ADICIONE ESSA CHAMADA DENTRO DO auth.onAuthStateChanged
-    // carregarHistorico();
-</script>
+        // APERTE O ÍCONE DE SINCRONIZAR NO TOPO PARA CARREGAR OS ITENS NA PRIMEIRA VEZ
+        async function configuracaoInicial() {
+            const itens = {
+                "Massa de Pizza": { atual: 50, max: 100, unidade: "un", icone: "fas fa-circle" },
+                "Queijo Muçarela": { atual: 15, max: 30, unidade: "kg", icone: "fas fa-cheese" },
+                "Presunto": { atual: 10, max: 20, unidade: "kg", icone: "fas fa-meat" },
+                "Massa de Esfiha": { atual: 100, max: 200, unidade: "un", icone: "fas fa-bread-slice" },
+                "Refrigerante": { atual: 24, max: 48, unidade: "un", icone: "fas fa-bottle-water" }
+            };
+            await db.ref('estoque').set(itens);
+            alert("Estoque do Point da Pizza configurado com sucesso!");
+        }
+
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+        function sair() { auth.signOut(); }
+    </script>
+</body>
+</html>
