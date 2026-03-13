@@ -86,18 +86,22 @@
     </div>
 
     <script>
-        // COLE SUA CONFIGURAÇÃO DO FIREBASE AQUI
-        const firebaseConfig = {
-            apiKey: "COLE_AQUI",
-            authDomain: "COLE_AQUI",
-            projectId: "COLE_AQUI",
-            storageBucket: "COLE_AQUI",
-            messagingSenderId: "COLE_AQUI",
-            appId: "COLE_AQUI"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+       
+// CONFIGURAÇÃO REAL DO POINT DA PIZZA
+  const firebaseConfig = {
+    apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+    authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+    databaseURL: "https://point-da-pizza-fc5d6.firebaseio.com",
+    projectId: "point-da-pizza-fc5d6",
+    storageBucket: "point-da-pizza-fc5d6.appspot.com",
+    messagingSenderId: "658125716246",
+    appId: "1:658125716246:web:ca129202695923984579d4ba"
+  };
+
+  // INICIALIZAÇÃO (Importante: use 'firebase.' antes)
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();};
 
         // Alternar entre Login e Cadastro
         function alternarTela(cadastrar) {
