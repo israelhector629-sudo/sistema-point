@@ -11,126 +11,177 @@
     <style>
         :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f8f9fa; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); }
+        body { background: var(--bg); overflow-x: hidden; }
 
-        .header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .header button { background: none; border: none; color: white; font-size: 1.8rem; padding: 10px; cursor: pointer; }
+        /* CABEÇALHO */
+        .header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header button { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; padding: 5px; }
 
-        #auth-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 1000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding: 30px;
-        }
+        /* TELA DE AUTENTICAÇÃO */
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .auth-box { width: 100%; max-width: 350px; text-align: center; }
-        .auth-box img { width: 100px; border-radius: 50%; margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .btn-acao { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .auth-box img { width: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        .btn-acao { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-acao:active { transform: scale(0.98); }
         .toggle-link { margin-top: 15px; color: var(--dark); cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
 
-        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 40px 20px; }
+        /* MENU LATERAL */
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 50px 20px; }
         .sidebar.open { left: 0; }
         .user-info { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #444; padding-bottom: 20px; }
-        .user-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; cursor: pointer; background: #eee; }
+        .user-pic { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; cursor: pointer; background: #eee; margin-bottom: 10px; }
         
-        .card { background: white; padding: 20px; border-radius: 12px; margin: 15px; display: none; }
-        .card.active { display: block; }
+        /* CONTEÚDO */
+        .card { background: white; padding: 20px; border-radius: 12px; margin: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        #app-content { display: none; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-box">
-            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/100'" alt="Logo">
-            <h2 id="auth-title">Entrar no Sistema</h2><br>
+            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/120'" alt="Logo">
+            <h2 id="auth-title">Acessar Sistema</h2><br>
             
             <div id="login-fields">
-                <input type="email" id="email" placeholder="E-mail">
-                <input type="password" id="senha" placeholder="Senha">
-                <button class="btn-acao" onclick="fazerLogin()">ACESSAR</button>
+                <input type="email" id="email" placeholder="Seu E-mail">
+                <input type="password" id="senha" placeholder="Sua Senha">
+                <button class="btn-acao" onclick="fazerLogin()">ENTRAR NO POINT</button>
                 <p class="toggle-link" onclick="alternarTela(true)">Não tem conta? Cadastre-se</p>
             </div>
 
             <div id="register-fields" style="display:none;">
                 <input type="text" id="reg-nome" placeholder="Nome Completo">
                 <input type="tel" id="reg-zap" placeholder="WhatsApp">
-                <input type="email" id="reg-email" placeholder="E-mail">
-                <input type="password" id="reg-senha" placeholder="Senha (6+ dígitos)">
-                <button class="btn-acao" style="background: #27ae60;" onclick="fazerCadastro()">CRIAR CONTA</button>
+                <input type="email" id="reg-email" placeholder="Seu melhor E-mail">
+                <input type="password" id="reg-senha" placeholder="Senha (mínimo 6 caracteres)">
+                <button class="btn-acao" style="background: #27ae60;" onclick="fazerCadastro()">CRIAR MINHA CONTA</button>
                 <p class="toggle-link" onclick="alternarTela(false)">Já tem conta? Faça Login</p>
             </div>
         </div>
     </div>
 
-    <div class="header">
-        <button onclick="menu()">☰</button>
-        <h3>POINT DA PIZZA</h3>
-        <div style="width:40px"></div>
-    </div>
-
-    <div class="sidebar" id="side">
-        <div class="user-info">
-            <img src="https://via.placeholder.com/150" id="user-img" class="user-pic" onclick="trocarFoto()">
-            <h4 id="user-name">Carregando...</h4>
-            <p id="user-status" style="font-size: 12px; opacity: 0.7;"></p>
+    <div id="app-content">
+        <div class="header">
+            <button onclick="menu()">☰</button>
+            <h3>POINT DA PIZZA</h3>
+            <div style="width:40px"></div>
         </div>
-        <button class="btn-acao" style="background:none; text-align:left;" onclick="sair()">🚪 Sair do Sistema</button>
-    </div>
 
-    <div class="card active" id="estoque">
-        <h3>📦 Seu Estoque está Seguro</h3>
-        <p>Aqui você pode continuar colocando seu conteúdo de estoque.</p>
+        <div class="sidebar" id="side">
+            <div class="user-info">
+                <img src="https://via.placeholder.com/150" id="user-img" class="user-pic" onclick="trocarFoto()">
+                <h4 id="user-name">Carregando...</h4>
+                <p id="user-status" style="font-size: 12px; opacity: 0.7;"></p>
+            </div>
+            <button class="btn-acao" style="background:rgba(255,255,255,0.1); border:1px solid #444;" onclick="sair()">Sair do Sistema</button>
+        </div>
+
+        <div class="card" id="estoque">
+            <h3>📦 Controle de Estoque</h3>
+            <p style="color:#666; margin-top:10px;">O sistema está pronto. Agora você pode adicionar seus itens aqui.</p>
+        </div>
     </div>
 
     <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
-        authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
-        databaseURL: "https://point-da-pizza-fc5d6.firebaseio.com",
-        projectId: "point-da-pizza-fc5d6",
-        storageBucket: "point-da-pizza-fc5d6.appspot.com",
-        messagingSenderId: "658125716246",
-        appId: "1:658125716246:web:ca129202695923984579d4ba"
-      };
+        // CONFIGURAÇÃO DO SEU FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+            authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+            databaseURL: "https://point-da-pizza-fc5d6.firebaseio.com",
+            projectId: "point-da-pizza-fc5d6",
+            storageBucket: "point-da-pizza-fc5d6.appspot.com",
+            messagingSenderId: "658125716246",
+            appId: "1:658125716246:web:ca129202695923984579d4ba"
+        };
 
-      if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-      }
-      const auth = firebase.auth();
-      const db = firebase.firestore();
+        // Inicializar Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-      function alternarTela(cadastrar) {
-          document.getElementById('login-fields').style.display = cadastrar ? 'none' : 'block';
-          document.getElementById('register-fields').style.display = cadastrar ? 'block' : 'none';
-          document.getElementById('auth-title').innerText = cadastrar ? 'Criar Nova Conta' : 'Entrar no Sistema';
-      }
+        // Mudar entre Login e Cadastro
+        function alternarTela(querCadastrar) {
+            document.getElementById('login-fields').style.display = querCadastrar ? 'none' : 'block';
+            document.getElementById('register-fields').style.display = querCadastrar ? 'block' : 'none';
+            document.getElementById('auth-title').innerText = querCadastrar ? 'Nova Conta' : 'Acessar Sistema';
+        }
 
-      async function fazerCadastro() {
-          const email = document.getElementById('reg-email').value;
-          const senha = document.getElementById('reg-senha').value;
-          const nome = document.getElementById('reg-nome').value;
-          const zap = document.getElementById('reg-zap').value;
+        // Criar conta nova
+        async function fazerCadastro() {
+            const email = document.getElementById('reg-email').value;
+            const senha = document.getElementById('reg-senha').value;
+            const nome = document.getElementById('reg-nome').value;
+            const zap = document.getElementById('reg-zap').value;
 
-          if(!email || !senha || !nome) return alert("Preencha os campos obrigatórios!");
+            if(!email || !senha || !nome) { alert("Preencha Nome, E-mail e Senha!"); return; }
 
-          try {
-              const cred = await auth.createUserWithEmailAndPassword(email, senha);
-              await db.collection('usuarios').doc(cred.user.uid).set({
-                  nome: nome,
-                  whatsapp: zap,
-                  foto: "https://via.placeholder.com/150",
-                  cargo: "Colaborador",
-                  isAdmin: false 
-              });
-              alert("Cadastro realizado!");
-          } catch (e) { alert("Erro: " + e.message); }
-      }
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, senha);
+                await db.collection('usuarios').doc(cred.user.uid).set({
+                    nome: nome,
+                    whatsapp: zap || "Não informado",
+                    foto: "https://via.placeholder.com/150",
+                    cargo: "Colaborador",
+                    isAdmin: false 
+                });
+                alert("Conta criada! O sistema vai entrar agora.");
+            } catch (e) { alert("Erro ao cadastrar: " + e.message); }
+        }
 
-      async function fazerLogin() {
-          const email = document.getElementById('email').value;
-          const senha = document.getElementById('senha').value;
-          if(!email || !senha) return alert("Digite e-mail e senha!");
-          try { await auth.signInWithEmailAndPassword(email, senha); } 
-          catch (e) { alert("Erro: " + e.message); }
-      }
+        // Fazer Login
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            if(!email || !senha) { alert("Digite e-mail e senha!"); return; }
+            try { 
+                await auth.signInWithEmailAndPassword(email, senha); 
+            } catch (e) { alert("Erro ao entrar: " + e.message); }
+        }
 
-      auth.onAuthStateChanged(user => {
+        // Vigiar se o usuário está logado ou não
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                atualizarPerfil(user.uid);
+            } else {
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
+            }
+        });
+
+        async function atualizarPerfil(uid) {
+            const doc = await db.collection('usuarios').doc(uid).get();
+            if (doc.exists) {
+                const d = doc.data();
+                document.getElementById('user-name').innerText = d.nome;
+                document.getElementById('user-img').src = d.foto;
+                document.getElementById('user-status').innerText = d.cargo;
+            }
+        }
+
+        function menu() { document.getElementById('side').classList.toggle('open'); }
+        function sair() { auth.signOut(); }
+
+        function trocarFoto() {
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = 'image/*';
+            input.onchange = e => {
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    const base64 = reader.result;
+                    await db.collection('usuarios').doc(auth.currentUser.uid).update({ foto: base64 });
+                    document.getElementById('user-img').src = base64;
+                    alert("Foto atualizada!");
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
