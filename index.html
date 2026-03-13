@@ -1,169 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Point da Pizza - Gestão</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+<div class="container">
+    <div id="lista-estoque">
+        </div>
 
-    <style>
-        :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --success: #2ecc71; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: #333; }
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
 
-        /* LOGIN */
-        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .auth-card img { width: 100px; border-radius: 50%; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-
-        /* HEADER */
-        header { background: var(--primary); color: white; padding: 40px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        
-        /* SIDEBAR */
-        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 50px 20px; }
-        .sidebar.open { left: 0; }
-        .user-profile { text-align: center; margin-bottom: 30px; }
-        .user-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; object-fit: cover; }
-
-        /* ESTOQUE VISUAL */
-        .container { padding: 20px; }
-        .card-estoque { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .estoque-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .estoque-header h4 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
-        
-        .progress-bar { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--success); transition: 0.4s; width: 0%; }
-        
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        .btn-plus { background: #e8f5e9; color: #2e7d32; }
-        .btn-minus { background: #ffebee; color: #c62828; }
-        .btn-main { background: var(--primary); color: white; width: 100%; margin-top: 10px; }
-    </style>
-</head>
-<body>
-
-    <div id="auth-screen">
-        <div class="auth-card">
-            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/100'">
-            <h2>Point da Pizza</h2>
-            <p>Gestão de Estoque</p><br>
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="senha" placeholder="Senha">
-            <button class="btn btn-main" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
+    <div class="card-estoque">
+        <h4><i class="fas fa-history"></i> Histórico de Movimentação</h4>
+        <div id="lista-historico" style="margin-top: 15px; font-size: 13px; max-height: 200px; overflow-y: auto;">
+            <p style="color: #999;">Nenhuma movimentação hoje...</p>
         </div>
     </div>
+</div>
 
-    <div id="app-content" style="display:none">
-        <header>
-            <i class="fas fa-bars" onclick="toggleMenu()" style="font-size: 24px;"></i>
-            <h3>POINT DA PIZZA</h3>
-            <div style="width:24px"></div>
-        </header>
+<script>
+    // ... (firebaseConfig igual)
 
-        <nav class="sidebar" id="sidebar">
-            <div class="user-profile">
-                <img src="" id="user-img" onerror="this.src='https://via.placeholder.com/80'">
-                <h4 id="user-name">...</h4>
-                <p id="user-status" style="font-size: 12px; opacity: 0.8;"></p>
-            </div>
-            <button class="btn" style="background:rgba(255,255,255,0.1); color:white;" onclick="sair()">Sair</button>
-        </nav>
-
-        <div class="container" id="lista-estoque">
-            </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
-            authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
-            databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
-            projectId: "point-da-pizza-fc5d6",
-            storageBucket: "point-da-pizza-fc5d6.appspot.com",
-            messagingSenderId: "658125716246",
-            appId: "1:658125716246:web:ca129202695923984579d4ba"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        async function fazerLogin() {
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert("Erro: " + e.message); }
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                carregarPerfil(user.uid);
-                carregarEstoque();
-            } else {
-                document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app-content').style.display = 'none';
+    // FUNÇÃO PARA ALTERAR ESTOQUE E GERAR HISTÓRICO
+    function alterar(nome, qtd) {
+        const usuario = document.getElementById('user-name').innerText;
+        
+        db.ref('estoque/' + nome).transaction(item => {
+            if(item) {
+                item.atual = Math.max(0, item.atual + qtd);
             }
-        });
-
-        function carregarPerfil(uid) {
-            db.ref('usuarios/' + uid).on('value', snap => {
-                const d = snap.val();
-                if(d) {
-                    document.getElementById('user-name').innerText = d.nome;
-                    document.getElementById('user-img').src = d.foto;
-                    document.getElementById('user-status').innerText = d.cargo;
-                }
+            return item;
+        }).then(() => {
+            // SALVA NO HISTÓRICO
+            db.ref('historico_estoque').push({
+                item: nome,
+                quantidade: qtd > 0 ? "+" + qtd : qtd,
+                usuario: usuario,
+                data: new Date().toLocaleTimeString('pt-BR')
             });
-        }
+        });
+    }
 
-        function carregarEstoque() {
-            db.ref('estoque').on('value', snap => {
-                const container = document.getElementById('lista-estoque');
-                container.innerHTML = "";
-                const itens = snap.val();
-                
-                for(let nome in itens) {
-                    const item = itens[nome];
-                    const porcento = (item.atual / item.max) * 100;
-                    const cor = porcento < 20 ? '#e74c3c' : '#2ecc71';
-                    
-                    container.innerHTML += `
-                        <div class="card-estoque">
-                            <div class="estoque-header">
-                                <h4><i class="${item.icone}"></i> ${nome}</h4>
-                                <span>${item.atual} / ${item.max} ${item.unidade}</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${porcento}%; background: ${cor}"></div>
-                            </div>
-                            <div class="controls">
-                                <button class="btn btn-minus" onclick="alterar('${nome}', -1)">- 1</button>
-                                <button class="btn btn-plus" onclick="alterar('${nome}', 1)">+ 1</button>
-                            </div>
+    // CARREGAR HISTÓRICO NA TELA
+    function carregarHistorico() {
+        db.ref('historico_estoque').limitToLast(10).on('value', snap => {
+            const lista = document.getElementById('lista-historico');
+            lista.innerHTML = "";
+            const dados = snap.val();
+            if(dados) {
+                Object.values(dados).reverse().forEach(h => {
+                    lista.innerHTML += `
+                        <div style="padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                            <span><b>${h.usuario}</b> ${h.quantidade} ${h.item}</span>
+                            <span style="color: #999;">${h.data}</span>
                         </div>
                     `;
-                }
-            });
-        }
+                });
+            }
+        });
+    }
 
-        function alterar(nome, qtd) {
-            db.ref('estoque/' + nome).transaction(item => {
-                if(item) {
-                    item.atual = Math.max(0, item.atual + qtd);
-                }
-                return item;
-            });
-        }
-
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
-        function sair() { auth.signOut(); }
-    </script>
-</body>
-</html>
+    // ADICIONE ESSA CHAMADA DENTRO DO auth.onAuthStateChanged
+    // carregarHistorico();
+</script>
