@@ -1,71 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Point da Pizza - Sistema</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Point da Pizza - Gestão</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f8f9fa; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); }
-        .header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .header button { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
+        :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --success: #2ecc71; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: #333; }
+
+        /* LOGIN */
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .auth-card img { width: 100px; border-radius: 50%; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+
+        /* HEADER */
+        header { background: var(--primary); color: white; padding: 40px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         
-        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .btn-acao { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
-        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 40px 20px; }
+        /* SIDEBAR */
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 50px 20px; }
         .sidebar.open { left: 0; }
-        .user-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; cursor: pointer; background: #eee; }
+        .user-profile { text-align: center; margin-bottom: 30px; }
+        .user-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; object-fit: cover; }
+
+        /* ESTOQUE VISUAL */
+        .container { padding: 20px; }
+        .card-estoque { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .estoque-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .estoque-header h4 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
         
-        .card { background: white; padding: 20px; border-radius: 12px; margin: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .progress-bar { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); transition: 0.4s; width: 0%; }
         
-        /* ESTILO DO ESTOQUE BONITO */
-        .item-estoque { margin-bottom: 20px; }
-        .info { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
-        .barra-bg { background: #eee; height: 12px; border-radius: 10px; overflow: hidden; position: relative; }
-        .barra-fill { background: #2ecc71; height: 100%; transition: 0.5s; width: 0%; }
-        .controles { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-min { flex: 1; padding: 10px; border: none; border-radius: 5px; background: #ddd; cursor: pointer; font-weight: bold; }
+        .controls { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn-plus { background: #e8f5e9; color: #2e7d32; }
+        .btn-minus { background: #ffebee; color: #c62828; }
+        .btn-main { background: var(--primary); color: white; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
-        <div class="auth-box" style="text-align:center">
-            <img src="logo.jpg.jpeg" style="width:100px; border-radius:50%" onerror="this.src='https://via.placeholder.com/100'">
-            <h2>Point da Pizza</h2><br>
-            <input type="email" id="email" placeholder="E-mail" style="width:100%; padding:15px; border-radius:8px; border:1px solid #ddd"><br><br>
-            <input type="password" id="senha" placeholder="Senha" style="width:100%; padding:15px; border-radius:8px; border:1px solid #ddd">
-            <button class="btn-acao" onclick="fazerLogin()">ENTRAR</button>
+        <div class="auth-card">
+            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/100'">
+            <h2>Point da Pizza</h2>
+            <p>Gestão de Estoque</p><br>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="senha" placeholder="Senha">
+            <button class="btn btn-main" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
         </div>
     </div>
 
     <div id="app-content" style="display:none">
-        <div class="header">
-            <button onclick="menu()">☰</button>
-            <h3>ESTOQUE POINT</h3>
-            <div style="width:40px"></div>
-        </div>
+        <header>
+            <i class="fas fa-bars" onclick="toggleMenu()" style="font-size: 24px;"></i>
+            <h3>POINT DA PIZZA</h3>
+            <div style="width:24px"></div>
+        </header>
 
-        <div class="sidebar" id="side">
-            <div style="text-align:center; padding-bottom:20px; border-bottom:1px solid #444">
-                <img src="" id="user-img" class="user-pic" onclick="trocarFoto()">
-                <h4 id="user-name" style="margin-top:10px">...</h4>
-                <p id="user-status" style="font-size:12px; opacity:0.7"></p>
+        <nav class="sidebar" id="sidebar">
+            <div class="user-profile">
+                <img src="" id="user-img" onerror="this.src='https://via.placeholder.com/80'">
+                <h4 id="user-name">...</h4>
+                <p id="user-status" style="font-size: 12px; opacity: 0.8;"></p>
             </div>
-            <button class="btn-acao" style="background:none; border:1px solid #555" onclick="sair()">🚪 Sair</button>
-        </div>
+            <button class="btn" style="background:rgba(255,255,255,0.1); color:white;" onclick="sair()">Sair</button>
+        </nav>
 
-        <div class="card">
-            <div id="lista-estoque">
-                <div class="item-estoque">Carregando estoque...</div>
+        <div class="container" id="lista-estoque">
             </div>
-        </div>
     </div>
 
     <script>
@@ -86,7 +97,7 @@
         async function fazerLogin() {
             const email = document.getElementById('email').value;
             const senha = document.getElementById('senha').value;
-            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert(e.message); }
+            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert("Erro: " + e.message); }
         }
 
         auth.onAuthStateChanged(user => {
@@ -114,22 +125,27 @@
 
         function carregarEstoque() {
             db.ref('estoque').on('value', snap => {
-                const lista = document.getElementById('lista-estoque');
-                lista.innerHTML = "";
-                const dados = snap.val();
+                const container = document.getElementById('lista-estoque');
+                container.innerHTML = "";
+                const itens = snap.val();
                 
-                for(let item in dados) {
-                    const info = dados[item];
-                    const porcentagem = (info.atual / info.max) * 100;
-                    const cor = porcentagem < 20 ? '#e74c3c' : '#2ecc71';
-
-                    lista.innerHTML += `
-                        <div class="item-estoque">
-                            <div class="info"><span>${item}</span> <span>${info.atual}${info.unidade}</span></div>
-                            <div class="barra-bg"><div class="barra-fill" style="width:${porcentagem}%; background:${cor}"></div></div>
-                            <div class="controles">
-                                <button class="btn-min" onclick="ajustar('${item}', -1)">- 1</button>
-                                <button class="btn-min" onclick="ajustar('${item}', 1)">+ 1</button>
+                for(let nome in itens) {
+                    const item = itens[nome];
+                    const porcento = (item.atual / item.max) * 100;
+                    const cor = porcento < 20 ? '#e74c3c' : '#2ecc71';
+                    
+                    container.innerHTML += `
+                        <div class="card-estoque">
+                            <div class="estoque-header">
+                                <h4><i class="${item.icone}"></i> ${nome}</h4>
+                                <span>${item.atual} / ${item.max} ${item.unidade}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${porcento}%; background: ${cor}"></div>
+                            </div>
+                            <div class="controls">
+                                <button class="btn btn-minus" onclick="alterar('${nome}', -1)">- 1</button>
+                                <button class="btn btn-plus" onclick="alterar('${nome}', 1)">+ 1</button>
                             </div>
                         </div>
                     `;
@@ -137,18 +153,17 @@
             });
         }
 
-        function ajustar(item, qtd) {
-            db.ref('estoque/' + item).transaction(atual => {
-                if(atual) {
-                    atual.atual = Math.max(0, atual.atual + qtd);
+        function alterar(nome, qtd) {
+            db.ref('estoque/' + nome).transaction(item => {
+                if(item) {
+                    item.atual = Math.max(0, item.atual + qtd);
                 }
-                return atual;
+                return item;
             });
         }
 
-        function menu() { document.getElementById('side').classList.toggle('open'); }
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
         function sair() { auth.signOut(); }
-        function trocarFoto() { /* ... mesma função anterior ... */ }
     </script>
 </body>
 </html>
