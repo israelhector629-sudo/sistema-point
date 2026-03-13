@@ -3,192 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Point da Pizza - Gestão Profissional</title>
+    <title>Point da Pizza - App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f4f7f6; --success: #2ecc71; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg); }
+        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        /* LOGIN */
+        #login-screen { position: fixed; inset: 0; background: var(--secondary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; transition: 0.5s; }
+        .login-header { text-align: center; margin-bottom: 20px; }
+        .login-header img { width: 150px !important; height: 150px !important; border-radius: 50%; border: 4px solid white; margin-bottom: 10px; object-fit: cover; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 50vh; padding: 10px; }
+        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+        .login-card:active { transform: scale(0.95); }
+        .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .login-card span { display: block; font-size: 0.75rem; color: #bdc3c7; }
+
+        /* APP */
+        #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); }
+        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .logo-top { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .logo-top img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; background: white; object-fit: cover; }
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 50px 20px; }
-        .sidebar.open { left: 0; }
-        .user-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; object-fit: cover; }
+        .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
+        .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
 
-        .container { padding: 15px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        /* ESTOQUE */
-        .progress-bar { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: var(--success); transition: 0.4s; }
-        .controls { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-plus { background: #e8f5e9; color: #2e7d32; }
-        .btn-minus { background: #ffebee; color: #c62828; }
+        .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; transition: 0.2s; }
+        .menu-btn.active { background: var(--primary); color: white; }
 
-        /* HISTÓRICO */
-        .hist-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
-        .hist-user { font-weight: bold; color: var(--dark); }
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; margin-bottom: 15px; }
+        .card.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-acao:active { transform: scale(0.98); }
+        .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+
+        .table-res { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100%; }
+            .sidebar.open { left: 0; }
+            .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+            .overlay.active { display: block; }
+        }
     </style>
 </head>
-<body>
+<body onload="inicializar()">
 
-    <div id="auth-screen">
-        <div style="text-align:center; width:100%; max-width:350px;">
-            <img src="logo.jpg.jpeg" style="width:100px; border-radius:50%; margin-bottom:20px;">
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="senha" placeholder="Senha">
-            <button class="btn" style="background:var(--primary); color:white; width:100%; margin-top:10px;" onclick="fazerLogin()">ENTRAR</button>
+    <div id="login-screen">
+        <div class="login-header">
+            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
+            <h2 style="margin-top:10px; letter-spacing: 2px;">POINT DA PIZZA</h2>
+        </div>
+        <div class="login-grid" id="login-grid">
+            </div>
+    </div>
+
+    <div id="app-container">
+        <div class="header">
+            <div class="logo-top">
+                <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'">
+                <span>POINT DA PIZZA</span>
+            </div>
+            <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><i class="fas fa-bars"></i></button>
+        </div>
+
+        <div class="app-body">
+            <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+            <div class="sidebar" id="sidebar">
+                <div class="user-info" id="user-info"></div>
+                <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
+                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
+                <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
+                <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer;">SAIR DO SISTEMA</button>
+            </div>
+
+            <div class="main-content">
+                <div id="inicio" class="card active">
+                    <h3><i class="fas fa-bell" style="color:var(--primary)"></i> Alertas Rápidos</h3>
+                    <div id="area-alertas" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;"></div>
+                </div>
+
+                <div id="pdv" class="card">
+                    <h3><i class="fas fa-minus-circle"></i> Registrar Saída</h3>
+                    <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
+                    <select id="selProd"></select>
+                    <input type="number" id="qSai" value="1" step="0.1" placeholder="Quantidade">
+                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()">CONFIRMAR SAÍDA</button>
+                </div>
+
+                <div id="estoque" class="card">
+                    <h3><i class="fas fa-boxes"></i> Gestão de Insumos</h3>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
+                        <input type="text" id="iNome" placeholder="Nome do Item (Ex: Massa)">
+                        <input type="number" id="iQtd" placeholder="Quantidade Total">
+                        <select id="iUnid"><option>Un</option><option>Kg</option><option>Pct</option><option>L</option></select>
+                        <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()">SALVAR NOVO ITEM</button>
+                    </div>
+                    <div class="table-res">
+                        <table>
+                            <thead><tr><th>Item</th><th>Qtd</th><th>Ação</th></tr></thead>
+                            <tbody id="corpo-estoque-lista"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="relatorio" class="card">
+                    <h3><i class="fas fa-file-invoice"></i> Fechamento de Turno</h3>
+                    <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque. Ele mostrará os itens que estão acabando e precisam ser comprados.</p>
+                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR PARA O PATRÃO</button>
+                </div>
+
+                <div id="config" class="card">
+                    <h3><i class="fas fa-users"></i> Gerenciar Equipe</h3>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
+                        <input type="text" id="fNome" placeholder="Nome do Funcionário">
+                        <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Atendente</option><option>Patrão</option></select>
+                        <input type="password" id="fSenha" placeholder="Senha de Acesso (Ex: 1234)">
+                        <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()">CADASTRAR MEMBRO</button>
+                    </div>
+                    <h4 style="margin-top: 20px;">Equipe Cadastrada:</h4>
+                    <div id="lista-equipe-del" style="margin-top:10px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="app-content" style="display:none">
-        <header>
-            <i class="fas fa-bars" onclick="toggleMenu()"></i>
-            <h3>POINT DA PIZZA</h3>
-            <i class="fas fa-sync" onclick="configuracaoInicial()" style="font-size: 18px; opacity: 0.5;"></i>
-        </header>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+      authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+      databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+      projectId: "point-da-pizza-fc5d6",
+      storageBucket: "point-da-pizza-fc5d6.appspot.com",
+      messagingSenderId: "658125716246",
+      appId: "1:658125716246:web:ca129202695923984579d4ba"
+    };
 
-        <nav class="sidebar" id="sidebar">
-            <div class="user-profile" style="text-align:center">
-                <img src="" id="user-img">
-                <h4 id="user-name">...</h4>
-                <p id="user-status" style="font-size:12px; opacity:0.8"></p>
-            </div>
-            <button class="btn" style="background:rgba(255,255,255,0.1); color:white; width:100%; margin-top:20px;" onclick="sair()">Sair</button>
-        </nav>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let estoque = []; let equipe = [];
+    let idLogado = null; let nomeLogado = "";
 
-        <div class="container">
-            <h4 style="margin-bottom:10px; color:var(--dark)"><i class="fas fa-boxes"></i> Estoque Atual</h4>
-            <div id="lista-estoque"></div>
-
-            <div class="card" style="margin-top:20px">
-                <h4 style="margin-bottom:10px"><i class="fas fa-history"></i> Histórico Recente</h4>
-                <div id="lista-historico"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
-            authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
-            databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
-            projectId: "point-da-pizza-fc5d6",
-            storageBucket: "point-da-pizza-fc5d6.appspot.com",
-            messagingSenderId: "658125716246",
-            appId: "1:658125716246:web:ca129202695923984579d4ba"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        async function fazerLogin() {
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert(e.message); }
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                carregarPerfil(user.uid);
-                carregarEstoque();
-                carregarHistorico();
-            } else {
-                document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app-content').style.display = 'none';
+    function inicializar() {
+        db.ref('equipe').on('value', snap => {
+            const data = snap.val();
+            equipe = data ? Object.values(data).filter(f => f != null) : [];
+            
+            // TRAVA DE SEGURANÇA: Se o banco estiver vazio, cria o seu perfil automaticamente!
+            if(equipe.length === 0) {
+                equipe = [{id: 1, nome: "Israel", cargo: "Patrão", senha: "5616"}];
+                db.ref('equipe').set(equipe);
             }
+            
+            renderLogin();
+            renderListaEquipe();
         });
 
-        function carregarPerfil(uid) {
-            db.ref('usuarios/' + uid).on('value', snap => {
-                const d = snap.val();
-                if(d) {
-                    document.getElementById('user-name').innerText = d.nome;
-                    document.getElementById('user-img').src = d.foto;
-                    document.getElementById('user-status').innerText = d.cargo;
-                }
-            });
+        db.ref('estoque_app').on('value', snap => {
+            const data = snap.val();
+            estoque = data ? Object.values(data).filter(i => i != null) : [];
+            renderEstoque();
+        });
+    }
+
+    function renderLogin() {
+        document.getElementById('login-grid').innerHTML = equipe.map(f => `
+            <div class="login-card" onclick="entrar(${f.id})">
+                <img src="${f.foto || 'https://via.placeholder.com/100'}">
+                <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">${f.nome}</div>
+                <span style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; color:white;">${f.cargo}</span>
+            </div>
+        `).join('');
+    }
+
+    function entrar(id) {
+        const f = equipe.find(x => x.id === id);
+        const p = prompt(`Digite a senha para ${f.nome}:`);
+        
+        // A senha padrão para o Patrão criado automaticamente é 5616
+        if(p === (f.senha || "5616")) {
+            idLogado = id; nomeLogado = f.nome;
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+            }, 500);
+            document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://via.placeholder.com/100'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
+        } else if(p !== null) {
+            alert("Senha Incorreta!");
+        }
+    }
+
+    function renderEstoque() {
+        if(estoque.length === 0) {
+            document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
+            document.getElementById('corpo-estoque-lista').innerHTML = `<tr><td colspan="3" style="text-align:center;">Estoque vazio</td></tr>`;
+            document.getElementById('area-alertas').innerHTML = `<div>Nenhum alerta. Cadastre insumos na aba Estoque.</div>`;
+            return;
         }
 
-        function carregarEstoque() {
-            db.ref('estoque').on('value', snap => {
-                const container = document.getElementById('lista-estoque');
-                container.innerHTML = "";
-                const itens = snap.val();
-                for(let nome in itens) {
-                    const item = itens[nome];
-                    const porcento = (item.atual / item.max) * 100;
-                    container.innerHTML += `
-                        <div class="card">
-                            <div style="display:flex; justify-content:space-between">
-                                <b><i class="${item.icone}"></i> ${nome}</b>
-                                <span>${item.atual} ${item.unidade}</span>
-                            </div>
-                            <div class="progress-bar"><div class="progress-fill" style="width:${porcento}%; background:${porcento < 20 ? '#e74c3c' : '#2ecc71'}"></div></div>
-                            <div class="controls">
-                                <button class="btn btn-minus" onclick="alterar('${nome}', -1)">-1</button>
-                                <button class="btn btn-plus" onclick="alterar('${nome}', 1)">+1</button>
-                            </div>
-                        </div>`;
-                }
-            });
-        }
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
+        
+        const faltas = estoque.filter(i => i.qtd < 5);
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 
+            ? `<div style="color:#c0392b; font-weight:bold; font-size:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção! Faltando:<br><br> ${faltas.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}</div>` 
+            : `<div style="color:var(--success); font-weight:bold;"><i class="fas fa-check-circle"></i> Estoque 100% em dia!</div>`;
 
-        function carregarHistorico() {
-            db.ref('historico_estoque').limitToLast(10).on('value', snap => {
-                const container = document.getElementById('lista-historico');
-                container.innerHTML = "";
-                const dados = snap.val();
-                if(dados) {
-                    Object.values(dados).reverse().forEach(h => {
-                        container.innerHTML += `
-                            <div class="hist-item">
-                                <span><span class="hist-user">${h.usuario}</span>: ${h.qtd > 0 ? '+'+h.qtd : h.qtd} ${h.item}</span>
-                                <span style="color:#999">${h.hora}</span>
-                            </div>`;
-                    });
-                }
-            });
-        }
+        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
+            <tr>
+                <td><strong>${i.nome}</strong></td>
+                <td style="color:${i.qtd < 5 ? '#e74c3c' : 'var(--success)'}; font-weight:bold; font-size:16px;">${i.qtd} ${i.unidade}</td>
+                <td><button class="btn-del" onclick="removerItemEstoque(${i.id})"><i class="fas fa-trash"></i></button></td>
+            </tr>
+        `).join('');
+    }
 
-        function alterar(nome, qtd) {
-            const user = document.getElementById('user-name').innerText;
-            db.ref('estoque/' + nome).transaction(item => {
-                if(item) item.atual = Math.max(0, item.atual + qtd);
-                return item;
-            }).then(() => {
-                db.ref('historico_estoque').push({
-                    item: nome, qtd: qtd, usuario: user, hora: new Date().toLocaleTimeString('pt-BR')
-                });
-            });
+    function enviarRelatorio() {
+        const faltas = estoque.filter(i => i.qtd < 5);
+        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*%0A%0A`;
+        msg += `*Responsável:* ${nomeLogado}%0A`;
+        msg += `*Data:* ${new Date().toLocaleDateString()}%0A%0A`;
+        
+        if(faltas.length > 0) {
+            msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*%0A`;
+            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})%0A`);
+        } else {
+            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!%0A`;
         }
+        
+        msg += `%0A_Enviado via App Point da Pizza_`;
+        window.open(`https://wa.me/55993375616?text=${msg}`);
+    }
 
-        // APERTE O ÍCONE DE SINCRONIZAR NO TOPO PARA CARREGAR OS ITENS NA PRIMEIRA VEZ
-        async function configuracaoInicial() {
-            const itens = {
-                "Massa de Pizza": { atual: 50, max: 100, unidade: "un", icone: "fas fa-circle" },
-                "Queijo Muçarela": { atual: 15, max: 30, unidade: "kg", icone: "fas fa-cheese" },
-                "Presunto": { atual: 10, max: 20, unidade: "kg", icone: "fas fa-meat" },
-                "Massa de Esfiha": { atual: 100, max: 200, unidade: "un", icone: "fas fa-bread-slice" },
-                "Refrigerante": { atual: 24, max: 48, unidade: "un", icone: "fas fa-bottle-water" }
-            };
-            await db.ref('estoque').set(itens);
-            alert("Estoque do Point da Pizza configurado com sucesso!");
+    function removerItemEstoque(id) {
+        if(confirm("Tem certeza que deseja excluir este item?")) {
+            estoque = estoque.filter(i => i.id !== id);
+            db.ref('estoque_app').set(estoque);
         }
+    }
 
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
-        function sair() { auth.signOut(); }
-    </script>
+    function baixar() {
+        if(estoque.length === 0) return alert("Cadastre itens no estoque primeiro!");
+        const id = document.getElementById('selProd').value;
+        const q = parseFloat(document.getElementById('qSai').value);
+        const i = estoque.find(x => x.id == id);
+        if(i) { 
+            i.qtd = Math.max(0, i.qtd - q); 
+            db.ref('estoque_app').set(estoque); 
+            alert(`Saída de ${q} ${i.unidade} de ${i.nome} registrada!`); 
+            document.getElementById('qSai').value = 1;
+        }
+    }
+
+    function salvarItem() {
+        const n = document.getElementById('iNome').value.trim();
+        const q = parseFloat(document.getElementById('iQtd').value);
+        const u = document.getElementById('iUnid').value;
+        if(!n || isNaN(q)) return alert("Preencha o nome e a quantidade corretamente!");
+
+        const existente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
+        if(existente) { 
+            existente.qtd += q; 
+        } else { 
+            estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u}); 
+        }
+        
+        db.ref('estoque_app').set(estoque);
+        document.getElementById('iNome').value = "";
+        document.getElementById('iQtd').value = "";
+        alert("Estoque atualizado com sucesso!");
+    }
+
+    function renderListaEquipe() {
+        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
+            <div class="list-item">
+                <div><b>${f.nome}</b> <br><small style="color:#666">${f.cargo}</small></div>
+                <button onclick="removerFunc(${f.id})" class="btn-del"><i class="fas fa-user-minus"></i></button>
+            </div>
+        `).join('');
+    }
+
+    function removerFunc(id) {
+        if(id === idLogado) return alert("Você não pode remover a si mesmo enquanto estiver logado!");
+        if(confirm("Remover este membro da equipe?")) {
+            equipe = equipe.filter(f => f.id !== id);
+            db.ref('equipe').set(equipe);
+        }
+    }
+
+    function addFunc() {
+        const n = document.getElementById('fNome').value.trim();
+        const s = document.getElementById('fSenha').value.trim();
+        const c = document.getElementById('fCargo').value;
+        
+        if(!n || !s) return alert("Preencha Nome e Senha!");
+        
+        equipe.push({id: Date.now(), nome: n, senha: s, cargo: c});
+        db.ref('equipe').set(equipe);
+        
+        document.getElementById('fNome').value = "";
+        document.getElementById('fSenha').value = "";
+        alert(`${n} adicionado à equipe com sucesso!`);
+    }
+
+    function tab(id, btn) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
+        btn.classList.add('active');
+        if(window.innerWidth <= 768) toggleMenu();
+    }
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function checkAdmin(id, btn) {
+        const p = prompt("Digite a Senha do Patrão para acessar Configurações:");
+        if(p === "5616") tab(id, btn);
+        else if(p !== null) alert("Acesso Negado!");
+    }
+</script>
 </body>
 </html>
