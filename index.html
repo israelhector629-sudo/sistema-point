@@ -87,7 +87,8 @@
 
     <script>
        
-// CONFIGURAÇÃO REAL DO POINT DA PIZZA
+<script>
+  // CONFIGURAÇÃO REAL DO POINT DA PIZZA
   const firebaseConfig = {
     apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
     authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
@@ -98,84 +99,93 @@
     appId: "1:658125716246:web:ca129202695923984579d4ba"
   };
 
-  // INICIALIZAÇÃO (Importante: use 'firebase.' antes)
-  firebase.initializeApp(firebaseConfig);
+  // INICIALIZAÇÃO
+  if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+  }
   const auth = firebase.auth();
-  const db = firebase.firestore();};
+  const db = firebase.firestore();
 
-        // Alternar entre Login e Cadastro
-        function alternarTela(cadastrar) {
-            document.getElementById('login-fields').style.display = cadastrar ? 'none' : 'block';
-            document.getElementById('register-fields').style.display = cadastrar ? 'block' : 'none';
-            document.getElementById('auth-title').innerText = cadastrar ? 'Criar Nova Conta' : 'Entrar no Sistema';
-        }
+  // Alternar entre Login e Cadastro
+  function alternarTela(cadastrar) {
+      document.getElementById('login-fields').style.display = cadastrar ? 'none' : 'block';
+      document.getElementById('register-fields').style.display = cadastrar ? 'block' : 'none';
+      document.getElementById('auth-title').innerText = cadastrar ? 'Criar Nova Conta' : 'Entrar no Sistema';
+  }
 
-        // Funções de Autenticação
-        async function fazerCadastro() {
-            const email = document.getElementById('reg-email').value;
-            const senha = document.getElementById('reg-senha').value;
-            const nome = document.getElementById('reg-nome').value;
-            const zap = document.getElementById('reg-zap').value;
+  // Funções de Autenticação
+  async function fazerCadastro() {
+      const email = document.getElementById('reg-email').value;
+      const senha = document.getElementById('reg-senha').value;
+      const nome = document.getElementById('reg-nome').value;
+      const zap = document.getElementById('reg-zap').value;
 
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, senha);
-                await db.collection('usuarios').doc(cred.user.uid).set({
-                    nome: nome,
-                    whatsapp: zap,
-                    foto: "https://via.placeholder.com/150",
-                    cargo: "Colaborador",
-                    isAdmin: false // Você muda para true direto no Firebase depois
-                });
-                alert("Cadastro realizado!");
-            } catch (e) { alert("Erro: " + e.message); }
-        }
+      if(!email || !senha || !nome) return alert("Preencha os campos obrigatórios!");
 
-        async function fazerLogin() {
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            try { await auth.signInWithEmailAndPassword(email, senha); } 
-            catch (e) { alert("Dados incorretos!"); }
-        }
+      try {
+          const cred = await auth.createUserWithEmailAndPassword(email, senha);
+          await db.collection('usuarios').doc(cred.user.uid).set({
+              nome: nome,
+              whatsapp: zap,
+              foto: "https://via.placeholder.com/150",
+              cargo: "Colaborador",
+              isAdmin: false 
+          });
+          alert("Cadastro realizado com sucesso!");
+      } catch (e) { alert("Erro no cadastro: " + e.message); }
+  }
 
-        // Monitor de Login
-        auth.onAuthStateChanged(user => {
-            const screen = document.getElementById('auth-screen');
-            if (user) {
-                screen.style.display = 'none';
-                atualizarPerfil(user.uid);
-            } else {
-                screen.style.display = 'flex';
-            }
-        });
+  async function fazerLogin() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      
+      if(!email || !senha) return alert("Digite e-mail e senha!");
 
-        async function atualizarPerfil(uid) {
-            const doc = await db.collection('usuarios').doc(uid).get();
-            if (doc.exists) {
-                const d = doc.data();
-                document.getElementById('user-name').innerText = d.nome;
-                document.getElementById('user-img').src = d.foto;
-                document.getElementById('user-status').innerText = d.cargo;
-            }
-        }
+      try { 
+          await auth.signInWithEmailAndPassword(email, senha); 
+      } catch (e) { alert("Erro ao entrar: " + e.message); }
+  }
 
-        function menu() { document.getElementById('side').classList.toggle('open'); }
-        function sair() { auth.signOut(); }
+  // Monitor de Login
+  auth.onAuthStateChanged(user => {
+      const screen = document.getElementById('auth-screen');
+      if (user) {
+          screen.style.display = 'none';
+          atualizarPerfil(user.uid);
+      } else {
+          screen.style.display = 'flex';
+      }
+  });
 
-        // Função para o Admin trocar foto
-        function trocarFoto() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = e => {
-                const reader = new FileReader();
-                reader.onload = async () => {
-                    const base64 = reader.result;
-                    await db.collection('usuarios').doc(auth.currentUser.uid).update({ foto: base64 });
-                    document.getElementById('user-img').src = base64;
-                };
-                reader.readAsDataURL(e.target.files[0]);
-            };
-            input.click();
+  async function atualizarPerfil(uid) {
+      const doc = await db.collection('usuarios').doc(uid).get();
+      if (doc.exists) {
+          const d = doc.data();
+          document.getElementById('user-name').innerText = d.nome;
+          document.getElementById('user-img').src = d.foto;
+          document.getElementById('user-status').innerText = d.cargo;
+      }
+  }
+
+  function menu() { document.getElementById('side').classList.toggle('open'); }
+  function sair() { auth.signOut(); }
+
+  function trocarFoto() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = e => {
+          const reader = new FileReader();
+          reader.onload = async () => {
+              const base64 = reader.result;
+              await db.collection('usuarios').doc(auth.currentUser.uid).update({ foto: base64 });
+              document.getElementById('user-img').src = base64;
+          };
+          reader.readAsDataURL(e.target.files[0]);
+      };
+      input.click();
+  }
+</script>
         }
     </script>
 </body>
