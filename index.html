@@ -12,18 +12,22 @@
         :root { --primary: #e74c3c; --dark: #2c3e50; --bg: #f8f9fa; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); }
-        .header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .header { background: var(--primary); color: white; padding: 45px 20px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .header button { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
+        
         #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .auth-box { width: 100%; max-width: 350px; text-align: center; }
         .auth-box img { width: 100px; border-radius: 50%; margin-bottom: 20px; }
         input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .btn-acao { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
         .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--dark); color: white; z-index: 999; transition: 0.3s; padding: 40px 20px; }
         .sidebar.open { left: 0; }
         .user-info { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #444; padding-bottom: 20px; }
         .user-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; cursor: pointer; background: #eee; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin: 15px; display: none; }
+        
+        .card { background: white; padding: 20px; border-radius: 12px; margin: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-acao { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 14px; }
+        .grid-vendas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -36,14 +40,6 @@
                 <input type="email" id="email" placeholder="E-mail">
                 <input type="password" id="senha" placeholder="Senha">
                 <button class="btn-acao" onclick="fazerLogin()">ACESSAR</button>
-                <p style="margin-top:15px; text-decoration:underline; cursor:pointer" onclick="alternar(true)">Cadastrar novo funcionário</p>
-            </div>
-            <div id="register-fields" style="display:none;">
-                <input type="text" id="reg-nome" placeholder="Nome Completo">
-                <input type="email" id="reg-email" placeholder="E-mail">
-                <input type="password" id="reg-senha" placeholder="Senha">
-                <button class="btn-acao" style="background:#27ae60" onclick="fazerCadastro()">CRIAR CONTA</button>
-                <p style="margin-top:15px; text-decoration:underline; cursor:pointer" onclick="alternar(false)">Voltar para Login</p>
             </div>
         </div>
     </div>
@@ -54,17 +50,32 @@
             <h3>POINT DA PIZZA</h3>
             <div style="width:40px"></div>
         </div>
+
         <div class="sidebar" id="side">
             <div class="user-info">
                 <img src="" id="user-img" class="user-pic" onclick="trocarFoto()">
-                <h4 id="user-name">Carregando...</h4>
+                <h4 id="user-name">...</h4>
                 <p id="user-status" style="font-size: 12px; opacity: 0.7;"></p>
             </div>
-            <button class="btn-acao" style="background:none" onclick="sair()">🚪 Sair</button>
+            <button class="btn-acao" style="background:none; border:1px solid #555" onclick="sair()">🚪 Sair</button>
         </div>
-        <div class="card" style="display:block">
-            <h3>📦 Sistema Online</h3>
-            <p>Seja bem-vindo ao controle do Point da Pizza!</p>
+
+        <div class="card">
+            <h3>📦 Controle de Vendas</h3>
+            <div class="grid-vendas">
+                <button class="btn-acao" onclick="venda('Pizza')">🍕 Pizza</button>
+                <button class="btn-acao" onclick="venda('Esfiha')">🥟 Esfiha</button>
+                <button class="btn-acao" onclick="venda('Marmitex')">🍱 Marmitex</button>
+                <button class="btn-acao" onclick="venda('Spaghetti')">🍝 Spaghetti</button>
+                <button class="btn-acao" onclick="venda('Pastel')">🥟 Pastel</button>
+                <button class="btn-acao" onclick="venda('Bebida')">🥤 Bebida</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>💰 Caixa de Hoje</h3>
+            <p id="total-vendas" style="font-size: 24px; font-weight: bold; color: #27ae60; margin: 10px 0;">R$ 0,00</p>
+            <button class="btn-acao" style="background:#27ae60" onclick="fecharCaixa()">WhatsApp do Dono</button>
         </div>
     </div>
 
@@ -83,31 +94,12 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        function alternar(cad) {
-            document.getElementById('login-fields').style.display = cad ? 'none' : 'block';
-            document.getElementById('register-fields').style.display = cad ? 'block' : 'none';
-        }
-
-        async function fazerCadastro() {
-            const email = document.getElementById('reg-email').value;
-            const senha = document.getElementById('reg-senha').value;
-            const nome = document.getElementById('reg-nome').value;
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, senha);
-                await db.ref('usuarios/' + cred.user.uid).set({
-                    nome: nome,
-                    foto: "https://via.placeholder.com/150",
-                    cargo: "Colaborador",
-                    isAdmin: false
-                });
-                alert("Funcionário cadastrado!");
-            } catch (e) { alert(e.message); }
-        }
+        let totalHoje = 0;
 
         async function fazerLogin() {
             const email = document.getElementById('email').value;
             const senha = document.getElementById('senha').value;
-            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert(e.message); }
+            try { await auth.signInWithEmailAndPassword(email, senha); } catch (e) { alert("Erro: " + e.message); }
         }
 
         auth.onAuthStateChanged(user => {
@@ -128,6 +120,27 @@
             }
         });
 
+        async function venda(item) {
+            const valor = prompt("Qual o valor da venda de " + item + "?");
+            if(valor && !isNaN(valor)) {
+                totalHoje += parseFloat(valor);
+                document.getElementById('total-vendas').innerText = "R$ " + totalHoje.toFixed(2);
+                
+                // Salva no histórico do Firebase
+                await db.ref('historico').push({
+                    item: item,
+                    valor: parseFloat(valor),
+                    vendedor: document.getElementById('user-name').innerText,
+                    data: new Date().toLocaleString()
+                });
+            }
+        }
+
+        function fecharCaixa() {
+            const msg = "Resumo Point da Pizza:%0A" + "Vendas de hoje: R$ " + totalHoje.toFixed(2);
+            window.open("https://wa.me/55993375616?text=" + msg);
+        }
+
         function menu() { document.getElementById('side').classList.toggle('open'); }
         function sair() { auth.signOut(); }
         
@@ -138,7 +151,6 @@
                 const reader = new FileReader();
                 reader.onload = async () => {
                     await db.ref('usuarios/' + auth.currentUser.uid).update({ foto: reader.result });
-                    alert("Foto atualizada!");
                 };
                 reader.readAsDataURL(e.target.files[0]);
             };
