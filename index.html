@@ -132,8 +132,8 @@
 
                 <div id="relatorio" class="card">
                     <h3><i class="fas fa-file-invoice"></i> Fechamento de Turno</h3>
-                    <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque. Ele mostrará os itens que estão acabando e precisam ser comprados.</p>
-                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR PARA O PATRÃO</button>
+                    <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque. Ele abrirá o seu WhatsApp para você escolher quem vai receber a lista.</p>
+                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO NO WHATSAPP</button>
                 </div>
 
                 <div id="config" class="card">
@@ -172,7 +172,6 @@
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
             
-            // TRAVA DE SEGURANÇA: Se o banco estiver vazio, cria o seu perfil automaticamente!
             if(equipe.length === 0) {
                 equipe = [{id: 1, nome: "Israel", cargo: "Patrão", senha: "5616"}];
                 db.ref('equipe').set(equipe);
@@ -203,7 +202,6 @@
         const f = equipe.find(x => x.id === id);
         const p = prompt(`Digite a senha para ${f.nome}:`);
         
-        // A senha padrão para o Patrão criado automaticamente é 5616
         if(p === (f.senha || "5616")) {
             idLogado = id; nomeLogado = f.nome;
             document.getElementById('login-screen').style.opacity = '0';
@@ -241,28 +239,25 @@
         `).join('');
     }
 
-   function enviarRelatorio() {
+    // --- NOVA FUNÇÃO DO WHATSAPP AQUI ---
+    function enviarRelatorio() {
         const faltas = estoque.filter(i => i.qtd < 5);
-        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*%0A%0A`;
-        msg += `*Responsável:* ${nomeLogado}%0A`;
-        msg += `*Data:* ${new Date().toLocaleDateString()}%0A%0A`;
+        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\\n\\n`;
+        msg += `*Responsável:* ${nomeLogado}\\n`;
+        msg += `*Data:* ${new Date().toLocaleDateString()}\\n\\n`;
         
         if(faltas.length > 0) {
-            msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*%0A`;
-            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})%0A`);
+            msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*\\n`;
+            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})\\n`);
         } else {
-            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!%0A`;
+            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!\\n`;
         }
         
-        msg += `%0A_Enviado via App Point da Pizza_`;
+        msg += `\\n_Enviado via App Point da Pizza_`;
         
-        // Link mágico do WhatsApp apenas com o texto (sem número de telefone)
-        const url = `https://api.whatsapp.com/send?text=${msg}`;
+        // Agora o link está preparado para não ter número, abrir a agenda e não quebrar
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         window.location.href = url;
-    } 
-        
-        // window.location.href funciona melhor em celulares do que window.open
-        window.location.href = `https://api.whatsapp.com/send?phone=${numeroDono}&text=${msg}`;
     }
 
     function removerItemEstoque(id) {
