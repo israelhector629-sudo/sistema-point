@@ -10,6 +10,53 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
+        /* LOGO TOPO ANIMADA */
+.logo-top img {
+  animation: pulseLogo 2.5s infinite;
+}
+
+@keyframes pulseLogo {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* NOME COM ENTRADA SUAVE */
+.logo-top span {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: aparecerNome 1s ease forwards;
+}
+
+@keyframes aparecerNome {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* EFEITO BRILHO NO NOME */
+.logo-top span {
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-top span::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
+  animation: brilhoNome 3s infinite;
+}
+
+@keyframes brilhoNome {
+  100% {
+    left: 100%;
+  }
+}
         :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
         body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
