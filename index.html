@@ -1,161 +1,212 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Point da Pizza - App</title>
+<meta charset="UTF-8">
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+<title>Point da Pizza - App</title>
 
-  <style>
-    /* LOGO TOPO ANIMADA */
-    .logo-top img {
-      animation: pulseLogo 2.5s infinite;
-    }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    @keyframes pulseLogo {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-      100% { transform: scale(1); }
-    }
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
-    /* NOME COM ENTRADA SUAVE */
-    .logo-top span {
-      opacity: 0;
-      transform: translateX(-20px);
-      animation: aparecerNome 1s ease forwards;
-    }
+<style>
 
-    @keyframes aparecerNome {
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
+/* ===================== ANIMAÇÕES ===================== */
 
-    /* EFEITO BRILHO NO NOME */
-    .logo-top span {
-      position: relative;
-      overflow: hidden;
-    }
+.logo-top img {
+  animation: pulseLogo 2.5s infinite;
+}
 
-    .logo-top span::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
-      animation: brilhoNome 3s infinite;
-    }
+@keyframes pulseLogo {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 
-    @keyframes brilhoNome {
-      100% { left: 100%; }
-    }
+.logo-top span {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: aparecerNome 1s ease forwards;
+}
 
-    :root {
-      --primary: #e74c3c;
-      --secondary: #1a252f;
-      --success: #27ae60;
-      --bg: #f4f7f8;
-      --accent: #3498db;
-    }
+@keyframes aparecerNome {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+.logo-top span {
+  position: relative;
+  overflow: hidden;
+}
 
-    body {
-      background-color: var(--secondary);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+.logo-top span::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
+  animation: brilhoNome 3s infinite;
+}
 
-    /* === ANIMAÇÕES GERAIS === */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+@keyframes brilhoNome {
+  100% { left: 100%; }
+}
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      70% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
+/* ===================== CORES ===================== */
 
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
+:root {
+  --primary: #e74c3c;
+  --secondary: #1a252f;
+  --success: #27ae60;
+  --bg: #f4f7f8;
+  --accent: #3498db;
+}
 
-    /* LOGIN */
-    #login-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--secondary);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      padding: 20px;
-    }
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
 
-    /* (continua igual...) */
-  </style>
+body {
+  background-color: var(--secondary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===================== LOGIN ===================== */
+
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--secondary);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+}
+
+/* ===================== APP ===================== */
+
+#app-container {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.header {
+  background: var(--primary);
+  color: white;
+  padding: 40px 15px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===================== BOTÃO WHATS ===================== */
+
+.whatsapp-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 28px;
+  padding: 15px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+</style>
 </head>
 
 <body onload="inicializar()">
 
-  <a href="https://wa.me/5516993061879?text=Olá,%20quero%20tirar%20um%20Duvida"
-     target="_blank"
-     class="whatsapp-btn">
-     💬
-  </a>
+<a href="https://wa.me/5516993061879?text=Olá,%20quero%20tirar%20um%20Duvida" target="_blank" class="whatsapp-btn">
+💬
+</a>
 
-  <div id="login-screen">
-    <div class="login-header">
-      <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
-      <h2>POINT DA PIZZA</h2>
+<div id="login-screen">
+  <div class="login-header">
+    <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'">
+    <h2>POINT DA PIZZA</h2>
+  </div>
+
+  <div id="login-grid"></div>
+</div>
+
+<div id="app-container">
+
+  <div class="header">
+    <div class="logo-top">
+      <img src="logo.jpg.jpeg">
+      <span>ESTOQUE POINT</span>
     </div>
 
-    <div class="login-grid" id="login-grid"></div>
+    <button onclick="toggleMenu()">☰</button>
   </div>
 
-  <div id="app-container">
-    <!-- TODO O RESTO DO HTML CONTINUA IGUAL -->
-  </div>
+  <!-- RESTO DO HTML IGUAL -->
+</div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIza...",
-      authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
-      databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
-      projectId: "point-da-pizza-fc5d6"
-    };
+<script>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+/* ===================== FIREBASE ===================== */
 
-    let estoque = [];
-    let equipe = [];
+const firebaseConfig = {
+  apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+  authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+  databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+  projectId: "point-da-pizza-fc5d6"
+};
 
-    function inicializar() {
-      console.log("App iniciado");
-    }
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    // resto do JS igual...
-  </script>
+/* ===================== VARIÁVEIS ===================== */
+
+let estoque = [];
+let equipe = [];
+let idLogado = null;
+let nomeLogado = "";
+
+/* ===================== INICIO ===================== */
+
+function inicializar() {
+  console.log("App iniciado");
+}
+
+/* ===================== FUNÇÕES ===================== */
+
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function entrar(id) {
+  const f = equipe.find(x => x.id === id);
+  const senha = prompt("Digite a senha:");
+
+  if (senha === f.senha) {
+    alert("Entrou");
+  } else {
+    alert("Senha errada");
+  }
+}
+
+</script>
 
 </body>
 </html>
