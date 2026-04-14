@@ -12,160 +12,191 @@
 
 <style>
 /* LOGO TOPO ANIMADA */
-.logo-top img {
-  animation: pulseLogo 2.5s infinite;
-}
+.logo-top img { animation: pulseLogo 2.5s infinite; }
 
 @keyframes pulseLogo {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+0% { transform: scale(1); }
+50% { transform: scale(1.08); }
+100% { transform: scale(1); }
 }
 
 /* NOME COM ENTRADA SUAVE */
 .logo-top span {
-  opacity: 0;
-  transform: translateX(-20px);
-  animation: aparecerNome 1s ease forwards;
+opacity: 0;
+transform: translateX(-20px);
+animation: aparecerNome 1s ease forwards;
 }
 
 @keyframes aparecerNome {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+to { opacity: 1; transform: translateX(0); }
 }
 
 /* EFEITO BRILHO NO NOME */
-.logo-top span {
-  position: relative;
-  overflow: hidden;
-}
+.logo-top span { position: relative; overflow: hidden; }
 
 .logo-top span::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
-  animation: brilhoNome 3s infinite;
+content: '';
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
+animation: brilhoNome 3s infinite;
 }
 
 @keyframes brilhoNome {
-  100% { left: 100%; }
+100% { left: 100%; }
 }
 
 :root {
-  --primary: #e74c3c;
-  --secondary: #1a252f;
-  --success: #27ae60;
-  --bg: #f4f7f8;
-  --accent: #3498db;
+--primary: #e74c3c;
+--secondary: #1a252f;
+--success: #27ae60;
+--bg: #f4f7f8;
+--accent: #3498db;
 }
 
 * {
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  padding: 0;
+box-sizing: border-box;
+font-family: 'Segoe UI', sans-serif;
+margin: 0;
+padding: 0;
 }
 
 body {
-  background-color: var(--secondary);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+background-color: var(--secondary);
+height: 100vh;
+display: flex;
+flex-direction: column;
+overflow: hidden;
 }
 
 /* === ANIMAÇÕES GERAIS === */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+from { opacity: 0; transform: translateY(15px); }
+to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+from { transform: translateX(100%); opacity: 0; }
+to { transform: translateX(0); opacity: 1; }
 }
 
 /* LOGIN */
 #login-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--secondary);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  padding: 20px;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
+position: fixed;
+inset: 0;
+background: var(--secondary);
+z-index: 9999;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+color: white;
+padding: 20px;
+transition: opacity 0.6s ease, visibility 0.6s ease;
 }
 
 .login-header {
-  text-align: center;
-  margin-bottom: 20px;
-  animation: fadeIn 0.8s ease-out;
+text-align: center;
+margin-bottom: 20px;
+animation: fadeIn 0.8s ease-out;
 }
 
 .login-header img {
-  width: 150px !important;
-  height: 150px !important;
-  border-radius: 50%;
-  border: 4px solid white;
-  margin-bottom: 10px;
-  object-fit: cover;
-  background: white;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  animation: pulse 2.5s infinite;
+width: 150px !important;
+height: 150px !important;
+border-radius: 50%;
+border: 4px solid white;
+margin-bottom: 10px;
+object-fit: cover;
+background: white;
+box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+animation: pulse 2.5s infinite;
 }
 
-/* RESTO DO CÓDIGO CONTINUA EXATAMENTE IGUAL... */
-</style>
+.login-grid {
+display: flex;
+gap: 15px;
+flex-wrap: wrap;
+justify-content: center;
+width: 100%;
+overflow-y: auto;
+max-height: 50vh;
+padding: 10px;
+animation: fadeIn 1s ease-out 0.2s both;
+}
 
-<style>
-.whatsapp-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #25D366;
-  color: white;
-  font-size: 28px;
-  padding: 15px;
-  border-radius: 50%;
-  text-decoration: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+.login-card {
+background: rgba(255,255,255,0.1);
+padding: 15px;
+border-radius: 12px;
+text-align: center;
+width: 130px;
+border: 1px solid rgba(255,255,255,0.1);
+cursor: pointer;
+transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.login-card:hover {
+transform: translateY(-5px);
+background: rgba(255,255,255,0.15);
+box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.login-card:active { transform: scale(0.95); }
+
+.login-card img {
+width: 65px;
+height: 65px;
+border-radius: 50%;
+border: 2px solid white;
+margin-bottom: 8px;
+object-fit: cover;
+}
+
+.login-card span {
+display: block;
+font-size: 0.75rem;
+color: #bdc3c7;
 }
 </style>
-
 </head>
 
 <body onload="inicializar()">
 
-<a href="https://wa.me/5516993061879?text=Olá,%20quero%20tirar%20um%20Duvida" target="_blank" class="whatsapp-btn">
-  💬
-</a>
+<a href="https://wa.me/5516993061879?text=Olá,%20quero%20tirar%20um%20Duvida"
+target="_blank" class="whatsapp-btn"> 💬 </a>
 
 <div id="login-screen">
-  <div class="login-header">
-    <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
-    <h2 style="margin-top:10px; letter-spacing: 2px;">POINT DA PIZZA</h2>
-  </div>
-
-  <div class="login-grid" id="login-grid"></div>
+<div class="login-header">
+<img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
+<h2 style="margin-top:10px; letter-spacing: 2px;">POINT DA PIZZA</h2>
 </div>
 
-<!-- RESTO DO HTML E JS SEGUE IGUAL AO SEU ORIGINAL -->
+<div class="login-grid" id="login-grid"></div>
+</div>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+projectId: "point-da-pizza-fc5d6",
+storageBucket: "point-da-pizza-fc5d6.appspot.com",
+messagingSenderId: "658125716246",
+appId: "1:658125716246:web:ca129202695923984579d4ba"
+};
+
+firebase.initializeApp(firebaseConfig);
+</script>
 
 </body>
 </html>
