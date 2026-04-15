@@ -291,7 +291,6 @@
                     <h3><i class="fas fa-users" style="color:var(--primary)"></i> Gerenciar Equipe</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
                         <input type="text" id="fNome" placeholder="Nome do Funcionário">
-                        <input type="text" id="fFoto" placeholder="URL da foto (opcional)">
                         <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Atendente</option><option>Patrão</option></select>
                         <input type="password" id="fSenha" placeholder="Senha de Acesso (Ex: 1234)">
                         <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()"><i class="fas fa-user-plus"></i> CADASTRAR MEMBRO</button>
@@ -533,34 +532,28 @@
         if(confirm("Tem certeza que deseja remover este membro da equipe?")) {
             equipe = equipe.filter(f => f.id !== id);
             db.ref('equipe').set(equipe);
-            <input type="text" id="fFoto" placeholder="URL da foto (opcional)">
         }
     }
 
-   function addFunc() {
-    const n = document.getElementById('fNome').value.trim();
-    const s = document.getElementById('fSenha').value.trim();
-    const c = document.getElementById('fCargo').value;
-    const fto = document.getElementById('fFoto').value.trim();
-
-    if(!n || !s) return showToast("Preencha Nome e Senha!", "error");
-
-    equipe.push({
-        id: Date.now(),
-        nome: n,
-        senha: s,
-        cargo: c,
-        foto: fto || "https://via.placeholder.com/100"
-    });
-
-    db.ref('equipe').set(equipe);
-
-    document.getElementById('fNome').value = "";
-    document.getElementById('fSenha').value = "";
-    document.getElementById('fFoto').value = "";
-
-    showToast("Membro cadastrado!", "success");
-}
+    function addFunc() {
+        const n = document.getElementById('fNome').value.trim();
+        const s = document.getElementById('fSenha').value.trim();
+        const c = document.getElementById('fCargo').value;
+        
+        if(!n || !s) return alert("Por favor, preencha o Nome e a Senha.");
+        
+        equipe.push({id: Date.now(), nome: n, senha: s, cargo: c});
+        db.ref('equipe').set(equipe);
+        
+        document.getElementById('fNome').value = "";
+        document.getElementById('fSenha').value = "";
+        
+        const btn = event.currentTarget;
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-check"></i> CADASTRADO!`;
+        btn.style.background = "var(--success)";
+        setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--secondary)"; }, 1500);
+    }
 
     function tab(id, btn) {
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
