@@ -11,7 +11,52 @@
 
     <style>
         /* ANIMAÇÃO LOGO */
-.logo-top img {
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 250px;
+  max-width: 300px;
+  padding: 15px 18px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 3.6s forwards;
+}
+
+.toast.success { background: #2ecc71; }
+.toast.error { background: #e74c3c; }
+.toast.info { background: #3498db; }
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+        .logo-top img {
   animation: pulseLogo 2.5s infinite;
 }
 @keyframes alertaShake {
@@ -174,7 +219,7 @@
     </style>
 </head>
 <body onload="inicializar()">
-
+    <div id="toast-container"></div>
     <div id="login-screen">
         <div class="login-header">
             <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
@@ -258,6 +303,24 @@
     </div>
 
 <script>
+    function showToast(msg, tipo = "info") {
+    const container = document.getElementById("toast-container");
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${tipo}`;
+
+    let icon = "fa-info-circle";
+    if(tipo === "success") icon = "fa-check-circle";
+    if(tipo === "error") icon = "fa-exclamation-circle";
+
+    toast.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+}
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
@@ -321,7 +384,7 @@
             
             document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://via.placeholder.com/100'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
         } else if(p !== null) {
-            alert("Senha Incorreta!");
+            showToast("Senha incorreta!", "error");
         }
     }
 
@@ -412,7 +475,7 @@
     }
 
     function baixar() {
-        if(estoque.length === 0) return alert("Cadastre itens no estoque primeiro!");
+        showToast("Cadastre itens no estoque primeiro!", "error");
         const id = document.getElementById('selProd').value;
         const q = parseFloat(document.getElementById('qSai').value);
         const i = estoque.find(x => x.id == id);
