@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Point da Pizza - App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -14,7 +14,6 @@
 .logo-top img {
   animation: pulseLogo 2.5s infinite;
 }
-
 @keyframes alertaPulse {
   0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
   70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
@@ -97,7 +96,7 @@
 
         /* APP */
         #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); animation: fadeIn 0.5s ease-out; }
-
+        
         .header { background: var(--primary); color: white; padding: 40px 15px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
         .logo-top { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 1.1rem; }
         .logo-top img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background: white; object-fit: cover; }
@@ -105,7 +104,7 @@
         .menu-toggle-btn:active { transform: rotate(90deg) scale(0.9); }
 
         .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
-
+        
         .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1); z-index: 1000; transform: translateX(0); }
         .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -124,14 +123,14 @@
 
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1); }
-
+        
         .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
         .btn-acao::after { content: ''; background: rgba(255,255,255,0.2); position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; transition: transform 0.4s ease, opacity 0.4s ease; }
         .btn-acao:active::after { transform: translate(-50%, -50%) scale(2); opacity: 1; transition: 0s; }
         .btn-acao:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .btn-acao:active { transform: translateY(1px); box-shadow: none; }
         .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
-
+        
         .table-res { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; min-width: 400px; }
         th { background: #f8f9fa; padding: 15px 10px; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
@@ -212,7 +211,7 @@
                         <select id="iUnid"><option>Un</option><option>Kg</option><option>Pct</option><option>L</option></select>
                         <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()"><i class="fas fa-save"></i> SALVAR NOVO ITEM</button>
                     </div>
-
+                    
                     <div class="table-res">
                         <table>
                             <thead><tr><th>Item</th><th>Qtd</th><th style="text-align:center;">Ações</th></tr></thead>
@@ -262,12 +261,12 @@
         db.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
-
+            
             if(equipe.length === 0) {
                 equipe = [{id: 1, nome: "Israel", cargo: "Patrão", senha: "5616"}];
                 db.ref('equipe').set(equipe);
             }
-
+            
             renderLogin();
             renderListaEquipe();
         });
@@ -292,18 +291,18 @@
     function entrar(id) {
         const f = equipe.find(x => x.id === id);
         const p = prompt(`Digite a senha para ${f.nome}:`);
-
+        
         if(p === (f.senha || "5616")) {
             idLogado = id; nomeLogado = f.nome;
             const loginScreen = document.getElementById('login-screen');
             loginScreen.style.opacity = '0';
             loginScreen.style.visibility = 'hidden';
-
+            
             setTimeout(() => {
                 loginScreen.style.display = 'none';
                 document.getElementById('app-container').style.display = 'flex';
             }, 600);
-
+            
             document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://via.placeholder.com/100'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
         } else if(p !== null) {
             alert("Senha Incorreta!");
@@ -319,12 +318,9 @@
         }
 
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
-
+        
         const faltas = estoque.filter(i => i.qtd < 5);
         document.getElementById('area-alertas').innerHTML = faltas.length > 0 
-            ? `<div style="color:#c0392b; font-weight:bold; font-size:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção! Faltando:<br><br> ${faltas.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}</div>` 
-            : `<div style="color:var(--success); font-weight:bold;"><i class="fas fa-check-circle"></i> Estoque 100% em dia!</div>`;
-
   ? `<div style="
         color:#c0392b;
         font-weight:bold;
@@ -378,16 +374,16 @@
         let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\\n\\n`;
         msg += `*Responsável:* ${nomeLogado}\\n`;
         msg += `*Data:* ${new Date().toLocaleDateString()}\\n\\n`;
-
+        
         if(faltas.length > 0) {
             msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*\\n`;
             faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})\\n`);
         } else {
             msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!\\n`;
         }
-
+        
         msg += `\\n_Enviado via App Point da Pizza_`;
-
+        
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         window.location.href = url;
     }
@@ -413,7 +409,7 @@
             btn.innerHTML = `<i class="fas fa-check"></i> LANÇADO!`;
             btn.style.background = "#2ecc71";
             setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--success)"; }, 1500);
-
+            
             document.getElementById('qSai').value = 1;
         }
     }
@@ -430,11 +426,11 @@
         } else { 
             estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u}); 
         }
-
+        
         db.ref('estoque_app').set(estoque);
         document.getElementById('iNome').value = "";
         document.getElementById('iQtd').value = "";
-
+        
         // Feedback visual
         const btn = event.currentTarget;
         const textoOriginal = btn.innerHTML;
@@ -464,15 +460,15 @@
         const n = document.getElementById('fNome').value.trim();
         const s = document.getElementById('fSenha').value.trim();
         const c = document.getElementById('fCargo').value;
-
+        
         if(!n || !s) return alert("Por favor, preencha o Nome e a Senha.");
-
+        
         equipe.push({id: Date.now(), nome: n, senha: s, cargo: c});
         db.ref('equipe').set(equipe);
-
+        
         document.getElementById('fNome').value = "";
         document.getElementById('fSenha').value = "";
-
+        
         const btn = event.currentTarget;
         const textoOriginal = btn.innerHTML;
         btn.innerHTML = `<i class="fas fa-check"></i> CADASTRADO!`;
