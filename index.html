@@ -235,7 +235,7 @@
                 <div id="relatorio" class="card">
                     <h3><i class="fas fa-file-invoice" style="color:var(--primary)"></i> Fechamento de Turno</h3>
                     <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque. Ele abrirá o seu WhatsApp para você escolher quem vai receber a lista.</p>
-                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO NO WHATSAPP</button>
+                    <button class="btn-acao btn-whatsapp" onclick="imprimirRelatorio()""><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO NO WHATSAPP</button>
                 </div>
 
                 <div id="config" class="card">
@@ -451,7 +451,33 @@
         btn.style.background = "var(--success)";
         setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--primary)"; }, 1500);
     }
+function imprimirRelatorio() {
+    const faltas = estoque.filter(i => i.qtd < 5);
 
+    let conteudo = `
+        <div style="font-family: monospace; width: 280px;">
+            <h3>🍕 POINT DA PIZZA</h3>
+            <p>Responsável: ${nomeLogado}</p>
+            <p>Data: ${new Date().toLocaleDateString()}</p>
+            <hr>
+    `;
+
+    if (faltas.length > 0) {
+        conteudo += `<b>COMPRAR:</b><br>`;
+        faltas.forEach(f => {
+            conteudo += `- ${f.nome} (${f.qtd} ${f.unidade})<br>`;
+        });
+    } else {
+        conteudo += `<b>Estoque OK</b><br>`;
+    }
+
+    conteudo += `<hr><p>Gerado pelo sistema</p></div>`;
+
+    const win = window.open("", "", "width=300,height=600");
+    win.document.write(conteudo);
+    win.document.close();
+    win.print();
+}
     function renderListaEquipe() {
         document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
             <div class="list-item">
