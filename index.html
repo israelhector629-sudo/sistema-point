@@ -389,10 +389,10 @@
         msg += `*Data:* ${new Date().toLocaleDateString()}\\n\\n`;
         
         if(faltas.length > 0) {
-            msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*\\n`;
+            msg += `⚠️ *REPOSIÇÃO NECESSÁRIAS (URGENTE):*\\n`;
             faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})\\n`);
         } else {
-            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!\\n`;
+            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para abastecer!\\n`;
         }
         
         msg += `\\n_Enviado via App Point da Pizza_`;
