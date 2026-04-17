@@ -349,58 +349,110 @@
         });
     }
 function imprimirRelatorio() {
-    const faltas = estoque.filter(i => i.qtd < 10);
+
+    const faltasPizza = estoque.filter(i => i.qtd <= 5);
+    const criticoPizza = estoque.filter(i => i.qtd <= 2);
+
+    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
+    const criticoLanche = estoqueLanche.filter(i => i.qtd <= 2);
 
     let conteudo = `
-        <html>
-        <head>
-            <style>
-                body {
-                    font-family: monospace;
-                    width: 310px;
-                    font-size: 26px;
-                }
-                .center {
-                    text-align: center;
-                }
-                .linha {
-                    border-top: 4px dashed #000;
-                    margin: 16px 0;
-                }
-            </style>
-        </head>
-        <body>
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: monospace;
+                width: 310px;
+                font-size: 22px;
+            }
+            .center { text-align: center; }
+            .linha {
+                border-top: 3px dashed #000;
+                margin: 10px 0;
+            }
+            .titulo {
+                font-weight: bold;
+                font-size: 24px;
+                margin-top: 10px;
+            }
+            .critico { color: red; font-weight: bold; }
+            .baixo { color: #e67e22; font-weight: bold; }
+            .ok { color: green; font-weight: bold; }
+        </style>
+    </head>
+    <body>
 
-            <div class="center">
-                <b>POINT DA PIZZA (SETOR PIZZA)</b><br>
-                --------------------------
-            </div>
+        <div class="center">
+            <b>POINT DA PIZZA</b><br>
+            ----------------------
+        </div>
 
-            Responsável: ${nomeLogado}<br>
-            Data: ${new Date().toLocaleString()}
+        Responsável: ${nomeLogado}<br>
+        Data: ${new Date().toLocaleString()}
 
-            <div class="linha"></div>
+        <div class="linha"></div>
 
+        <div class="titulo">🍕 SETOR PIZZA</div>
     `;
 
-    if (faltas.length > 0) {
-        conteudo += `<b>ITENS PARA ABASTECER:</b><br>`;
-        faltas.forEach(f => {
-            conteudo += `- ${f.nome} (${f.qtd} ${f.unidade})<br>`;
+    // PIZZA
+    if (criticoPizza.length > 0) {
+        conteudo += `<div class="critico">CRÍTICO:</div>`;
+        criticoPizza.forEach(i => {
+            conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
         });
-    } else {
-        conteudo += `<b>ESTOQUE OK</b><br>`;
+    }
+
+    if (faltasPizza.length > 0) {
+        conteudo += `<div class="baixo">BAIXO:</div>`;
+        faltasPizza
+            .filter(i => i.qtd > 2)
+            .forEach(i => {
+                conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
+            });
+    }
+
+    if (faltasPizza.length === 0) {
+        conteudo += `<div class="ok">ESTOQUE OK</div>`;
+    }
+
+    conteudo += `<div class="linha"></div>`;
+
+    // LANCHE
+    conteudo += `<div class="titulo">🍔 SETOR LANCHE</div>`;
+
+    if (criticoLanche.length > 0) {
+        conteudo += `<div class="critico">CRÍTICO:</div>`;
+        criticoLanche.forEach(i => {
+            conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
+        });
+    }
+
+    if (faltasLanche.length > 0) {
+        conteudo += `<div class="baixo">BAIXO:</div>`;
+        faltasLanche
+            .filter(i => i.qtd > 2)
+            .forEach(i => {
+                conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
+            });
+    }
+
+    if (faltasLanche.length === 0) {
+        conteudo += `<div class="ok">ESTOQUE OK</div>`;
     }
 
     conteudo += `
-            <div class="linha"></div>
-            <div class="center">Peso dos itens</div>
+        <div class="linha"></div>
 
-        </body>
-        </html>
+        <div class="center">
+            *** FIM DO RELATÓRIO ***
+        </div>
+
+    </body>
+    </html>
     `;
 
-    const win = window.open('', '', 'width=300,height=600');
+    const win = window.open('', '', 'width=320,height=600');
     win.document.write(conteudo);
     win.document.close();
 
