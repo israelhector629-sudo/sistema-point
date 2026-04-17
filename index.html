@@ -560,8 +560,64 @@ function removerLanche(id) {
 
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
         
-        const faltas = estoque.filter(i => i.qtd < 5);
-        document.getElementById('area-alertas').innerHTML = faltas.length > 0 
+        const faltasPizza = estoque.filter(i => i.qtd <= 5);
+const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
+
+let html = "";
+
+// 🍕 PIZZA
+if (faltasPizza.length > 0) {
+    html += `
+    <div style="
+        color:#c0392b;
+        font-weight:bold;
+        padding:10px;
+        border-radius:8px;
+        background:#fff5f5;
+        margin-bottom:10px;
+        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
+    ">
+        🍕 PIZZA - FALTANDO:<br><br>
+        ${faltasPizza.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}
+    </div>
+    `;
+}
+
+// 🍔 LANCHE
+if (faltasLanche.length > 0) {
+    html += `
+    <div style="
+        color:#e67e22;
+        font-weight:bold;
+        padding:10px;
+        border-radius:8px;
+        background:#fff8f0;
+        margin-bottom:10px;
+        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
+    ">
+        🍔 LANCHE - FALTANDO:<br><br>
+        ${faltasLanche.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}
+    </div>
+    `;
+}
+
+// ✅ TUDO OK
+if (faltasPizza.length === 0 && faltasLanche.length === 0) {
+    html = `
+    <div style="
+        color:var(--success);
+        font-weight:bold;
+        padding:10px;
+        border-radius:8px;
+        background:#f0fff5;
+        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
+    ">
+        ✅ ESTOQUE TOTAL EM DIA!
+    </div>
+    `;
+}
+
+document.getElementById('area-alertas').innerHTML = html;
   ? `<div style="
         color:#c0392b;
         font-weight:bold;
