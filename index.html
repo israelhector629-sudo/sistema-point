@@ -559,45 +559,75 @@ function removerLanche(id) {
         }
     }
 
-    function enviarRelatorio() {
-    const faltas = estoque.filter(i => i.qtd <= 10);
-    const critico = estoque.filter(i => i.qtd <= 7);
+   function enviarRelatorio() {
+
+    const faltasPizza = estoque.filter(i => i.qtd <= 5);
+    const criticoPizza = estoque.filter(i => i.qtd <= 2);
+
+    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
+    const criticoLanche = estoqueLanche.filter(i => i.qtd <= 2);
 
     let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\n\n`;
     msg += `👨‍🍳 *Responsável:* ${nomeLogado}\n`;
     msg += `📅 *Data:* ${new Date().toLocaleString()}\n\n`;
 
-    // 🔴 CRÍTICO
-    if (critico.length > 0) {
-        msg += `🚨 *ESTOQUE CRÍTICO (URGENTE):*\n`;
-        critico.forEach(i => {
+    // ======================
+    // 🍕 PIZZA
+    // ======================
+    msg += `🍕 *SETOR PIZZA*\n`;
+
+    if (criticoPizza.length > 0) {
+        msg += `🚨 Crítico:\n`;
+        criticoPizza.forEach(i => {
             msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
         });
-        msg += `\n`;
     }
 
-    // 🟡 BAIXO
-    if (faltas.length > 0) {
-        msg += `⚠️ *ITENS PARA REPOSIÇÃO:*\n`;
-        faltas
+    if (faltasPizza.length > 0) {
+        msg += `⚠️ Baixo:\n`;
+        faltasPizza
             .filter(i => i.qtd > 2)
             .forEach(i => {
                 msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
             });
-        msg += `\n`;
     }
 
-    // ✅ OK
-    if (faltas.length === 0) {
-        msg += `✅ *ESTOQUE:* Tudo em ordem!\n\n`;
+    if (faltasPizza.length === 0) {
+        msg += `✅ Tudo OK\n`;
     }
 
-    msg += `📲 _Enviado pelo sistema Point da Pizza_`;
+    msg += `\n`;
+
+    // ======================
+    // 🍔 LANCHE
+    // ======================
+    msg += `🍔 *SETOR LANCHE*\n`;
+
+    if (criticoLanche.length > 0) {
+        msg += `🚨 Crítico:\n`;
+        criticoLanche.forEach(i => {
+            msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
+        });
+    }
+
+    if (faltasLanche.length > 0) {
+        msg += `⚠️ Baixo:\n`;
+        faltasLanche
+            .filter(i => i.qtd > 2)
+            .forEach(i => {
+                msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
+            });
+    }
+
+    if (faltasLanche.length === 0) {
+        msg += `✅ Tudo OK\n`;
+    }
+
+    msg += `\n📲 _Sistema Point da Pizza_`;
 
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
 }
-    fu
     function removerItemEstoque(id) {
         if(confirm("Tem certeza que deseja excluir este item?")) {
             estoque = estoque.filter(i => i.id !== id);
