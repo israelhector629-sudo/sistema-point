@@ -196,6 +196,9 @@
                 <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
                 <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
                 <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+               <button class="menu-btn" onclick="tab('estoque-lanche', this)">
+    <i class="fas fa-hamburger"></i> Estoque Lanche
+</button>
                 <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
                 <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
@@ -214,38 +217,81 @@
                     <input type="number" id="qSai" value="1" step="0.1" placeholder="Quantidade">
                     <button class="btn-acao" style="background:var(--success);" onclick="baixar(event)"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
                 </div>
+<div id="estoque-lanche" class="card">
+    <h3><i class="fas fa-hamburger" style="color:var(--primary)"></i> Estoque Lanche</h3>
 
-                <div id="estoque" class="card">
-                    <h3><i class="fas fa-boxes" style="color:var(--primary)"></i> Gestão de Insumos</h3>
-                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
-                        <input type="text" id="iNome" placeholder="Nome do Item (Ex: Massa)">
-                        <input type="number" id="iQtd" placeholder="Quantidade Total">
-                        <select id="iUnid"><option>Un</option><option>Kg</option><option>Pct</option><option>L</option></select>
-                        <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem(event)"><i class="fas fa-save"></i> SALVAR NOVO ITEM</button>
-                    </div>
-                    
-                    <div class="table-res">
-                        <table>
-                            <thead><tr><th>Item</th><th>Qtd</th><th style="text-align:center;">Ações</th></tr></thead>
-                            <tbody id="corpo-estoque-lista"></tbody>
-                        </table>
-                    </div>
-                </div>
+    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
+        <input type="text" id="lNome" placeholder="Nome do Item">
+        <input type="number" id="lQtd" placeholder="Quantidade">
+        <select id="lUnid">
+            <option>Un</option>
+            <option>Kg</option>
+            <option>Pct</option>
+        </select>
+
+        <button class="btn-acao" style="background:var(--primary);" onclick="salvarLanche(event)">
+            SALVAR ITEM
+        </button>
+    </div>
+
+    <div class="table-res">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qtd</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-lanche"></tbody>
+        </table>
+    </div>
+</div>
+          <div id="estoque" class="card">
+    <h3><i class="fas fa-boxes" style="color:var(--primary)"></i> Gestão de Insumos</h3>
+
+    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
+        <input type="text" id="iNome" placeholder="Nome do Item (Ex: Massa)">
+        <input type="number" id="iQtd" placeholder="Quantidade Total">
+        <select id="iUnid">
+            <option>Un</option>
+            <option>Kg</option>
+            <option>Pct</option>
+            <option>L</option>
+        </select>
+
+        <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem(event)">
+            <i class="fas fa-save"></i> SALVAR NOVO ITEM
+        </button>
+    </div>
+
+    <div class="table-res">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qtd</th>
+                    <th style="text-align:center;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-estoque-lista"></tbody>
+        </table>
+    </div>
+</div>
 
                 <div id="relatorio" class="card">
-                    <h3><i class="fas fa-file-invoice" style="color:var(--primary)"></i> Fechamento de Turno</h3>
-                    <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque.</p>
-                   <button class="btn-acao" style="background:#000;" onclick="imprimirRelatorio()">
-    <i class="fas fa-print"></i> IMPRIMIR RELATÓRIO
-</button>
-    <i class="fas fa-print"></i> IMPRIMIR RELATÓRIO
+    <h3>...</h3>
+
+   <button class="btn-acao" style="background:var(--secondary);" onclick="imprimirRelatorio()">
+    IMPRIMIR RELATÓRIO
 </button>
 
 <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()">
-    <i class="fab fa-whatsapp"></i> ENVIAR NO WHATSAPP
+    ENVIAR NO WHATSAPP
 </button>
+</div> <!-- FECHA AQUI -->
 
-                <div id="config" class="card">
+<div id="config" class="card">
                     <h3><i class="fas fa-users" style="color:var(--primary)"></i> Gerenciar Equipe</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
                         <input type="text" id="fNome" placeholder="Nome do Funcionário">
@@ -273,10 +319,16 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+   let estoqueLanche = [];
     let estoque = []; let equipe = [];
     let idLogado = null; let nomeLogado = "";
 
     function inicializar() {
+        db.ref('estoque_lanche').on('value', snap => {
+    const data = snap.val();
+    estoqueLanche = data ? Object.values(data).filter(i => i != null) : [];
+    renderEstoqueLanche();
+});
         db.ref('equipe').on('value', snap => {
             const data = snap.val();
             equipe = data ? Object.values(data).filter(f => f != null) : [];
@@ -364,7 +416,67 @@ function imprimirRelatorio() {
             </div>
         `).join('');
     }
+function removerLanche(id) {
+    if(confirm("Excluir item?")) {
+        estoqueLanche = estoqueLanche.filter(i => i.id !== id);
+        db.ref('estoque_lanche').set(estoqueLanche);
+    }
+}
+    function ajustarLanche(id, delta) {
+    const item = estoqueLanche.find(i => i.id === id);
+    if(item) {
+        item.qtd = Math.max(0, item.qtd + delta);
+        db.ref('estoque_lanche').set(estoqueLanche);
+    }
+}
+    function salvarLanche(event) {
+    const n = document.getElementById('lNome').value.trim();
+    const q = parseFloat(document.getElementById('lQtd').value);
+    const u = document.getElementById('lUnid').value;
 
+    if(!n || isNaN(q)) return alert("Preencha corretamente!");
+
+    const existente = estoqueLanche.find(i => i.nome.toLowerCase() === n.toLowerCase());
+
+    if(existente) {
+        existente.qtd += q;
+    } else {
+        estoqueLanche.push({
+            id: Date.now(),
+            nome: n,
+            qtd: q,
+            unidade: u
+        });
+    }
+
+    db.ref('estoque_lanche').set(estoqueLanche);
+
+    document.getElementById('lNome').value = "";
+    document.getElementById('lQtd').value = "";
+}
+    function renderEstoqueLanche() {
+    const corpo = document.getElementById('corpo-lanche');
+
+    if(estoqueLanche.length === 0) {
+        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
+        return;
+    }
+
+    corpo.innerHTML = estoqueLanche.map(i => `
+        <tr>
+            <td>${i.nome}</td>
+            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
+                ${i.qtd} ${i.unidade}
+            </td>
+            <td style="text-align:center;">
+                <button class="btn-mini btn-sub" onclick="ajustarLanche(${i.id}, -1)">-</button>
+                <button class="btn-mini btn-add" onclick="ajustarLanche(${i.id}, 1)">+</button>
+                <button class="btn-mini btn-del" onclick="removerLanche(${i.id})">🗑</button>
+            </td>
+        </tr>
+    `).join('');
+}
+  
     function entrar(id) {
         const f = equipe.find(x => x.id === id);
         const p = prompt(`Digite a senha para ${f.nome}:`);
@@ -448,24 +560,44 @@ function imprimirRelatorio() {
     }
 
     function enviarRelatorio() {
-        const faltas = estoque.filter(i => i.qtd < 5);
-        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\\n\\n`;
-        msg += `*Responsável:* ${nomeLogado}\\n`;
-        msg += `*Data:* ${new Date().toLocaleDateString()}\\n\\n`;
-        
-        if(faltas.length > 0) {
-            msg += `⚠️ *REPOSIÇÃO NECESSÁRIAS (URGENTE):*\\n`;
-            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})\\n`);
-        } else {
-            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para abastecer!\\n`;
-        }
-        
-        msg += `\\n_Enviado via App Point da Pizza_`;
-        
-        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-        window.location.href = url;
+    const faltas = estoque.filter(i => i.qtd <= 10);
+    const critico = estoque.filter(i => i.qtd <= 7);
+
+    let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\n\n`;
+    msg += `👨‍🍳 *Responsável:* ${nomeLogado}\n`;
+    msg += `📅 *Data:* ${new Date().toLocaleString()}\n\n`;
+
+    // 🔴 CRÍTICO
+    if (critico.length > 0) {
+        msg += `🚨 *ESTOQUE CRÍTICO (URGENTE):*\n`;
+        critico.forEach(i => {
+            msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
+        });
+        msg += `\n`;
     }
 
+    // 🟡 BAIXO
+    if (faltas.length > 0) {
+        msg += `⚠️ *ITENS PARA REPOSIÇÃO:*\n`;
+        faltas
+            .filter(i => i.qtd > 2)
+            .forEach(i => {
+                msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
+            });
+        msg += `\n`;
+    }
+
+    // ✅ OK
+    if (faltas.length === 0) {
+        msg += `✅ *ESTOQUE:* Tudo em ordem!\n\n`;
+    }
+
+    msg += `📲 _Enviado pelo sistema Point da Pizza_`;
+
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+}
+    fu
     function removerItemEstoque(id) {
         if(confirm("Tem certeza que deseja excluir este item?")) {
             estoque = estoque.filter(i => i.id !== id);
