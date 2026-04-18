@@ -202,6 +202,9 @@
                 <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
                 <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
+            <button class="btn-acao" style="background:#8e44ad;" onclick="fechamentoSemanal()">
+    FECHAMENTO SEMANAL
+</button>
             </div>
 
             <div class="main-content">
@@ -471,13 +474,70 @@ function imprimirRelatorio() {
 function removerLanche(id) {
     if(confirm("Excluir item?")) {
         estoqueLanche = estoqueLanche.filter(i => i.id !== id);
-        db.ref('estoque_lanche').set(estoqueLanche);
+  db.ref('estoque_lanche').set(estoqueLanche);
     }
+}
+function mostrarRelatorioSemanal(resumo) {
+
+    let texto = `
+    📊 FECHAMENTO SEMANAL\n
+    Responsável: ${nomeLogado}
+    Data: ${new Date().toLocaleString()}\n\n
+    `;
+
+    for(let item in resumo) {
+        texto += `- ${item}: ${resumo[item]}\n`;
+    }
+
+    alert(texto);
+}
+    function fechamentoSemanal() {
+
+    db.ref('historico').once('value', snap => {
+        const data = snap.val();
+        if(!data) return alert("Sem dados ainda");
+
+        const lista = Object.values(data);
+
+        const agora = new Date();
+        const semana = 7 * 24 * 60 * 60 * 1000;
+
+        const ultimos7dias = lista.filter(item => {
+            const d = new Date(item.data);
+            return (agora - d) <= semana;
+        });
+
+        // agrupar produtos
+        const resumo = {};
+
+        ultimos7dias.forEach(i => {
+            if(!resumo[i.produto]) {
+                resumo[i.produto] = 0;
+            }
+            resumo[i.produto] += i.quantidade;
+        });
+
+        mostrarRelatorioSemanal(resumo);
+    });
 }
     function ajustarLanche(id, delta) {
     const item = estoqueLanche.find(i => i.id === id);
+
     if(item) {
         item.qtd = Math.max(0, item.qtd + delta);
+
+        // 🔥 SALVA SOMENTE SAÍDA
+        if(delta < 0) {
+            db.ref('historico').push({
+                produto: item.nome,
+                quantidade: Math.abs(delta),
+                unidade: item.unidade,
+                data: new Date().toISOString(),
+                usuario: nomeLogado,
+                tipo: "lanche"
+            });
+        }
+
         db.ref('estoque_lanche').set(estoqueLanche);
     }
 }
@@ -647,8 +707,8 @@ document.getElementById('area-alertas').innerHTML = html;
 
    function enviarRelatorio() {
 
-    const faltasPizza = estoque.filter(i => i.qtd <= 5);
-    const criticoPizza = estoque.filter(i => i.qtd <= 2);
+    const faltasPizza = estoque.filter(i => i.qtd <= 7);
+    const criticoPizza = estoque.filter(i => i.qtd <= 10);
 
     const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
     const criticoLanche = estoqueLanche.filter(i => i.qtd <= 2);
@@ -722,7 +782,7 @@ document.getElementById('area-alertas').innerHTML = html;
     }
 
     function baixar(event) {
-    if(estoque.length === 0) return alert("Cadastre itens no estoque primeiro!");
+    if(estoque.length === 0) return alert("Cadastre itens primeiro!");
 
     const id = document.getElementById('selProd').value;
     const q = parseFloat(document.getElementById('qSai').value);
@@ -732,7 +792,19 @@ document.getElementById('area-alertas').innerHTML = html;
         i.qtd = Math.max(0, i.qtd - q);
         db.ref('estoque_app').set(estoque);
 
-        // efeito visual
+        // 🔥 NOVO: salvar histórico
+        const registro = {
+            produto: i.nome,
+            quantidade: q,
+            unidade: i.unidade,
+            data: new Date().toISOString(),
+            usuario: nomeLogado,
+            tipo: "pizza"
+        };
+
+        db.ref('historico').push(registro);
+
+        // efeito visual (igual você já tem)
         const btn = event.currentTarget;
         const textoOriginal = btn.innerHTML;
 
@@ -747,7 +819,6 @@ document.getElementById('area-alertas').innerHTML = html;
         document.getElementById('qSai').value = 1;
     }
 }
-
     function salvarItem(event) {
     const n = document.getElementById('iNome').value.trim();
     const q = parseFloat(document.getElementById('iQtd').value);
