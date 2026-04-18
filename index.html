@@ -477,21 +477,23 @@ function removerLanche(id) {
   db.ref('estoque_lanche').set(estoqueLanche);
     }
 }
-function mostrarRelatorioSemanal(resumo) {
+function mostrarRelatorioSemanal(pizza, lanche) {
 
-    let texto = `
-    📊 FECHAMENTO SEMANAL\n
-    Responsável: ${nomeLogado}
-    Data: ${new Date().toLocaleString()}\n\n
-    `;
+    let texto = `📊 FECHAMENTO SEMANAL\n\n`;
 
-    for(let item in resumo) {
-        texto += `- ${item}: ${resumo[item]}\n`;
+    texto += `🍕 PIZZA:\n`;
+    for(let i in pizza){
+        texto += `• ${i}: ${pizza[i]}\n`;
+    }
+
+    texto += `\n🍔 LANCHE:\n`;
+    for(let i in lanche){
+        texto += `• ${i}: ${lanche[i]}\n`;
     }
 
     alert(texto);
 }
-    function fechamentoSemanal() {
+  function fechamentoSemanal() {
 
     db.ref('historico').once('value', snap => {
         const data = snap.val();
@@ -507,17 +509,23 @@ function mostrarRelatorioSemanal(resumo) {
             return (agora - d) <= semana;
         });
 
-        // agrupar produtos
-        const resumo = {};
+        // 🔥 separar por tipo
+        const resumoPizza = {};
+        const resumoLanche = {};
 
         ultimos7dias.forEach(i => {
-            if(!resumo[i.produto]) {
-                resumo[i.produto] = 0;
+
+            const grupo = i.tipo === "lanche" ? resumoLanche : resumoPizza;
+
+            if(!grupo[i.produto]) {
+                grupo[i.produto] = 0;
             }
-            resumo[i.produto] += i.quantidade;
+
+            grupo[i.produto] += i.quantidade;
         });
 
-        mostrarRelatorioSemanal(resumo);
+        // 👇 É AQUI que entra
+        mostrarRelatorioSemanal(resumoPizza, resumoLanche);
     });
 }
     function ajustarLanche(id, delta) {
