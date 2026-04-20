@@ -730,94 +730,50 @@ renderEstoqueGeral();}
     }
 }
     function renderEstoque() {
-       if(estoque.length === 0) {
-    document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
-    document.getElementById('corpo-estoque-lista').innerHTML = ``;
-    document.getElementById('area-alertas').innerHTML = ``;
-}
-    renderEstoqueGeral(); // ✅ AGORA FUNCIONA
-    
-        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
-        
-        const faltasPizza = estoque.filter(i => i.qtd <= 5);
-const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
 
-let html = "";
-
-// 🍕 PIZZA
-if (faltasPizza.length > 0) {
-    html += `
-    <div style="
-        color:#c0392b;
-        font-weight:bold;
-        padding:10px;
-        border-radius:8px;
-        background:#fff5f5;
-        margin-bottom:10px;
-        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
-    ">
-        🍕 PIZZA - FALTANDO:<br><br>
-        ${faltasPizza.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}
-    </div>
-    `;
-}
-
-// 🍔 LANCHE
-if (faltasLanche.length > 0) {
-    html += `
-    <div style="
-        color:#e67e22;
-        font-weight:bold;
-        padding:10px;
-        border-radius:8px;
-        background:#fff8f0;
-        margin-bottom:10px;
-        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
-    ">
-        🍔 LANCHE - FALTANDO:<br><br>
-        ${faltasLanche.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}
-    </div>
-    `;
-}
-
-// ✅ TUDO OK
-if (faltasPizza.length === 0 && faltasLanche.length === 0) {
-    html = `
-    <div style="
-        color:var(--success);
-        font-weight:bold;
-        padding:10px;
-        border-radius:8px;
-        background:#f0fff5;
-        animation: alertaEntrada 0.5s ease, alertaPulse 1.5s infinite;
-    ">
-        ✅ ESTOQUE TOTAL EM DIA!
-    </div>
-    `;
-}
-
-document.getElementById('area-alertas').innerHTML = html;
-
-
-        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
-            <tr>
-                <td><strong style="color: var(--secondary);">${i.nome}</strong></td>
-                <td style="color:${i.qtd < 5 ? '#e74c3c' : 'var(--success)'}; font-weight:bold; font-size:16px;">
-                    ${i.qtd} <span style="font-size:12px; color:#999; font-weight:normal;">${i.unidade}</span>
-                </td>
-                <td style="text-align:center;">
-                    <div style="display: flex; gap: 6px; justify-content: center;">
-                        <button class="btn-mini btn-sub" onclick="ajustarQtd(${i.id}, -1)" title="Diminuir"><i class="fas fa-minus"></i></button>
-                        <button class="btn-mini btn-add" onclick="ajustarQtd(${i.id}, 1)" title="Adicionar"><i class="fas fa-plus"></i></button>
-                        <button class="btn-mini btn-del" style="margin-left: 8px;" onclick="removerItemEstoque(${i.id})" title="Excluir"><i class="fas fa-trash"></i></button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+    if(estoque.length === 0) {
+        document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
+        document.getElementById('corpo-estoque-lista').innerHTML = ``;
+        document.getElementById('area-alertas').innerHTML = ``;
+    } else {
+        document.getElementById('selProd').innerHTML = estoque.map(i =>
+            `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`
+        ).join('');
     }
 
+    const faltasPizza = estoque.filter(i => i.qtd <= 5);
+    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
 
+    let html = "";
 
+    if (faltasPizza.length > 0) {
+        html += `🍕 Faltando:<br>${faltasPizza.map(f => `${f.nome} (${f.qtd})`).join('<br>')}`;
+    }
+
+    if (faltasLanche.length > 0) {
+        html += `<br><br>🍔 Faltando:<br>${faltasLanche.map(f => `${f.nome} (${f.qtd})`).join('<br>')}`;
+    }
+
+    if (!html) {
+        html = "✅ Estoque OK";
+    }
+
+    document.getElementById('area-alertas').innerHTML = html;
+
+    document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
+        <tr>
+            <td>${i.nome}</td>
+            <td>${i.qtd} ${i.unidade}</td>
+            <td>
+                <button onclick="ajustarQtd(${i.id}, -1)">-</button>
+                <button onclick="ajustarQtd(${i.id}, 1)">+</button>
+                <button onclick="removerItemEstoque(${i.id})">X</button>
+            </td>
+        </tr>
+    `).join('');
+
+    renderEstoqueGeral();
+}
   function ajustarQtd(id, delta) {
     const item = estoque.find(x => x.id === id);
     if(item) {
