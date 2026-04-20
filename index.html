@@ -202,6 +202,9 @@
                <button class="menu-btn" onclick="tab('estoque-geral', this)">
     <i class="fas fa-layer-group"></i> Estoque Geral
 </button>
+                <button class="btn-acao" style="background:#34495e;" onclick="imprimirEstoqueGeral()">
+    IMPRIMIR ESTOQUE GERAL
+</button>
                 <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
                 <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
@@ -372,7 +375,16 @@ renderEstoqueGeral();
     renderEstoqueGeral(); // 🔥 GARANTE render
 });
     }
-function renderEstoqueGeral() {
+function calcularTotal() {
+    const totalPizza = estoque.reduce((acc, i) => acc + i.qtd, 0);
+    const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
+
+    document.getElementById('area-alertas').innerHTML += `
+        <br><br>📊 Total Pizza: ${totalPizza}
+        <br>📊 Total Lanche: ${totalLanche}
+    `;
+}
+    function renderEstoqueGeral() {
 
     const corpo = document.getElementById('corpo-geral');
 
