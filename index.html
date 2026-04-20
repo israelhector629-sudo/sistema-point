@@ -878,10 +878,11 @@ renderEstoqueGeral();}
             <td>${i.nome}</td>
             <td>${i.qtd} ${i.unidade}</td>
             <td>
-                <button onclick="ajustarQtd(${i.id}, -1)">-</button>
-                <button onclick="ajustarQtd(${i.id}, 1)">+</button>
-                <button onclick="removerItemEstoque(${i.id})">X</button>
-            </td>
+             <td style="text-align:center;">
+    <button class="btn-mini btn-sub" onclick="ajustarQtd(${i.id}, -1)">-</button>
+    <button class="btn-mini btn-add" onclick="ajustarQtd(${i.id}, 1)">+</button>
+    <button class="btn-mini btn-del" onclick="removerItemEstoque(${i.id})">🗑</button>
+</td>
         </tr>
     `).join('');
 
