@@ -699,7 +699,7 @@ renderEstoqueGeral();
 renderEstoqueGeral();}
   
     function entrar(id) {
-        const f = equipe.find(x => x.id === id);
+      const f = equipe.find(x => x.id == id);
         const p = prompt(`Digite a senha para ${f.nome}:`);
         
         if(p === (f.senha || "5616")) {
