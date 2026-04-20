@@ -171,6 +171,13 @@
 </head>
 <body onload="inicializar()">
 
+   
+    <div class="table-res">
+        <table>
+            <tbody id="corpo-extra"></tbody>
+        </table>
+    </div>
+</div>
     <div id="login-screen">
         <div class="login-header">
             <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
@@ -214,27 +221,55 @@
             </div>
 
             <div class="main-content">
-                <div id="inicio" class="card active">
-                    <h3><i class="fas fa-bell" style="color:var(--primary)"></i> Alertas Rápidos</h3>
-                    <div id="area-alertas" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary);"></div>
-                </div>
-<div id="estoque-geral" class="card">
-    <h3><i class="fas fa-layer-group" style="color:var(--primary)"></i> Estoque Geral</h3>
 
-    <div class="table-res">
-        <table>
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Qtd</th>
-                    <th>Tipo</th>
-                </tr>
-            </thead>
-            <tbody id="corpo-geral"></tbody>
-        </table>
+    <div id="inicio" class="card active">...</div>
+
+    <!-- ESTOQUE GERAL (VISUALIZAÇÃO) -->
+    <div id="estoque-geral" class="card">
+        <h3><i class="fas fa-layer-group" style="color:var(--primary)"></i> Estoque Geral</h3>
+
+        <div class="table-res">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-geral"></tbody>
+            </table>
+        </div>
     </div>
-</div>
-                <div id="pdv" class="card">
+
+    <!-- 🔥 NOVA TELA (SEPARADA) -->
+    <div id="estoque-extra" class="card">
+        <h3>🧾 Estoque Geral (Outros)</h3>
+
+        <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+            <input type="text" id="eNome" placeholder="Nome do Item">
+            <input type="number" id="eQtd" placeholder="Quantidade">
+
+            <select id="eUnid">
+                <option>Un</option>
+                <option>Kg</option>
+                <option>L</option>
+            </select>
+
+            <button class="btn-acao" style="background:var(--primary);" onclick="salvarExtra(event)">
+                SALVAR ITEM
+            </button>
+        </div>
+
+        <div class="table-res">
+            <table>
+                <tbody id="corpo-extra"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>     
+             <div id="pdv" class="card">
                     <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
                     <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
                     <select id="selProd"></select>
@@ -347,8 +382,14 @@
    let estoqueLanche = [];
     let estoque = []; let equipe = [];
     let idLogado = null; let nomeLogado = "";
-
+    let estoqueExtra = [];
     function inicializar() {
+       db.ref('estoque_extra').on('value', snap => {
+    const data = snap.val();
+    estoqueExtra = data ? Object.values(data).filter(i => i != null) : [];
+    renderEstoqueExtra();
+    renderEstoqueGeral();
+});
         db.ref('estoque_lanche').on('value', snap => {
     const data = snap.val();
     estoqueLanche = data ? Object.values(data).filter(i => i != null) : [];
@@ -384,8 +425,43 @@ function calcularTotal() {
         <br>📊 Total Lanche: ${totalLanche}
     `;
 }
+   function salvarExtra(event) {
+    const n = document.getElementById('eNome').value.trim();
+    const q = parseFloat(document.getElementById('eQtd').value);
+    const u = document.getElementById('eUnid').value;
+
+    if(!n || isNaN(q)) return alert("Preencha corretamente!");
+
+    const existente = estoqueExtra.find(i => i.nome.toLowerCase() === n.toLowerCase());
+
+    if(existente) {
+        existente.qtd += q;
+    } else {
+        estoqueExtra.push({
+            id: Date.now(),
+            nome: n,
+            qtd: q,
+            unidade: u
+        });
+    }
+
+    db.ref('estoque_extra').set(estoqueExtra);
+
+    renderEstoqueExtra();
+    renderEstoqueGeral();
+
+    document.getElementById('eNome').value = "";
+    document.getElementById('eQtd').value = "";
+}
     function renderEstoqueGeral() {
 
+
+    <div class="table-res">
+        <table>
+            <tbody id="corpo-extra"></tbody>
+        </table>
+    </div>
+</div>
     const corpo = document.getElementById('corpo-geral');
 
     const lista = [
