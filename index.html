@@ -199,6 +199,9 @@
                <button class="menu-btn" onclick="tab('estoque-lanche', this)">
     <i class="fas fa-hamburger"></i> Estoque Lanche
 </button>
+               <button class="menu-btn" onclick="tab('estoque-geral', this)">
+    <i class="fas fa-layer-group"></i> Estoque Geral
+</button>
                 <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
                 <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
                 <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
@@ -212,7 +215,22 @@
                     <h3><i class="fas fa-bell" style="color:var(--primary)"></i> Alertas Rápidos</h3>
                     <div id="area-alertas" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary);"></div>
                 </div>
+<div id="estoque-geral" class="card">
+    <h3><i class="fas fa-layer-group" style="color:var(--primary)"></i> Estoque Geral</h3>
 
+    <div class="table-res">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-geral"></tbody>
+        </table>
+    </div>
+</div>
                 <div id="pdv" class="card">
                     <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
                     <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
@@ -351,7 +369,31 @@
             renderEstoque();
         });
     }
-function imprimirRelatorio() {
+function renderEstoqueGeral() {
+
+    const corpo = document.getElementById('corpo-geral');
+
+    const lista = [
+        ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
+        ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"}))
+    ];
+
+    if(lista.length === 0) {
+        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
+        return;
+    }
+
+    corpo.innerHTML = lista.map(i => `
+        <tr>
+            <td>${i.nome}</td>
+            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
+                ${i.qtd} ${i.unidade}
+            </td>
+            <td>${i.tipo}</td>
+        </tr>
+    `).join('');
+}
+    function imprimirRelatorio() {
 
     const faltasPizza = estoque.filter(i => i.qtd <= 5);
     const criticoPizza = estoque.filter(i => i.qtd <= 2);
@@ -647,7 +689,7 @@ function mostrarRelatorioSemanal(pizza, lanche) {
             </td>
         </tr>
     `).join('');
-}
+renderEstoqueGeral();}
   
     function entrar(id) {
         const f = equipe.find(x => x.id === id);
@@ -670,13 +712,23 @@ function mostrarRelatorioSemanal(pizza, lanche) {
         }
     }
 
+   function alertaGeral() {
+
+    const geral = [...estoque, ...estoqueLanche];
+
+    const baixos = geral.filter(i => i.qtd <= 5);
+
+    if(baixos.length > 0) {
+        alert("⚠️ Itens baixos:\n\n" + baixos.map(i => i.nome + " (" + i.qtd + ")").join("\n"));
+    }
+}
     function renderEstoque() {
         if(estoque.length === 0) {
             document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
             document.getElementById('corpo-estoque-lista').innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color: #999;">O estoque está vazio. Cadastre o primeiro item!</td></tr>`;
             document.getElementById('area-alertas').innerHTML = `<div style="color: #666;"><i class="fas fa-info-circle"></i> Nenhum alerta. Cadastre insumos na aba Estoque.</div>`;
             return;
-        }
+        renderEstoqueGeral();}
 
         document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
         
