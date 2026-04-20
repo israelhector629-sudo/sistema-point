@@ -396,6 +396,101 @@ function renderEstoqueGeral() {
         </tr>
     `).join('');
 }
+    function imprimirEstoqueGeral() {
+
+    let conteudo = `
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: monospace;
+                width: 310px;
+                font-size: 20px;
+            }
+            .center { text-align: center; }
+            .linha {
+                border-top: 2px dashed #000;
+                margin: 10px 0;
+            }
+            .titulo {
+                font-weight: bold;
+                margin-top: 10px;
+            }
+            .baixo { color: #e67e22; font-weight: bold; }
+            .critico { color: red; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+
+    <div class="center">
+        <b>POINT DA PIZZA</b><br>
+        ESTOQUE GERAL
+    </div>
+
+    <div class="linha"></div>
+
+    Responsável: ${nomeLogado}<br>
+    Data: ${new Date().toLocaleString()}
+
+    <div class="linha"></div>
+
+    <div class="titulo">🍕 PIZZA</div>
+    `;
+
+    // PIZZA
+    if (estoque.length === 0) {
+        conteudo += `Sem itens<br>`;
+    } else {
+        estoque.forEach(i => {
+            let classe = "";
+
+            if (i.qtd <= 2) classe = "critico";
+            else if (i.qtd <= 5) classe = "baixo";
+
+            conteudo += `<div class="${classe}">
+                - ${i.nome}: ${i.qtd} ${i.unidade}
+            </div>`;
+        });
+    }
+
+    conteudo += `<div class="linha"></div>`;
+
+    // LANCHE
+    conteudo += `<div class="titulo">🍔 LANCHE</div>`;
+
+    if (estoqueLanche.length === 0) {
+        conteudo += `Sem itens<br>`;
+    } else {
+        estoqueLanche.forEach(i => {
+            let classe = "";
+
+            if (i.qtd <= 2) classe = "critico";
+            else if (i.qtd <= 5) classe = "baixo";
+
+            conteudo += `<div class="${classe}">
+                - ${i.nome}: ${i.qtd} ${i.unidade}
+            </div>`;
+        });
+    }
+
+    conteudo += `
+    <div class="linha"></div>
+
+    <div class="center">
+        *** FIM DO ESTOQUE ***
+    </div>
+
+    </body>
+    </html>
+    `;
+
+    const win = window.open('', '', 'width=320,height=600');
+    win.document.write(conteudo);
+    win.document.close();
+
+    win.focus();
+    win.print();
+}
     function imprimirRelatorio() {
 
     const faltasPizza = estoque.filter(i => i.qtd <= 5);
