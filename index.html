@@ -453,7 +453,9 @@ function calcularTotal() {
     if (estoque.length === 0) {
         conteudo += `Sem itens<br>`;
     } else {
-        estoque.forEach(i => {
+       [...estoque]
+.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }))
+.forEach(i => {
             let classe = "";
 
             if (i.qtd <= 2) classe = "critico";
@@ -473,7 +475,9 @@ function calcularTotal() {
     if (estoqueLanche.length === 0) {
         conteudo += `Sem itens<br>`;
     } else {
-        estoqueLanche.forEach(i => {
+       [...estoqueLanche]
+.sort((a, b) => a.nome.localeCompare(b.nome))
+.forEach(i => {
             let classe = "";
 
             if (i.qtd <= 2) classe = "critico";
