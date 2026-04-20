@@ -453,18 +453,18 @@ function calcularTotal() {
     if (estoque.length === 0) {
         conteudo += `Sem itens<br>`;
     } else {
-       [...estoque]
-.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }))
+      [...estoque]
+.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
 .forEach(i => {
-            let classe = "";
+    let classe = "";
 
-            if (i.qtd <= 2) classe = "critico";
-            else if (i.qtd <= 5) classe = "baixo";
+    if (i.qtd <= 2) classe = "critico";
+    else if (i.qtd <= 5) classe = "baixo";
 
-            conteudo += `<div class="${classe}">
-                - ${i.nome}: ${i.qtd} ${i.unidade}
-            </div>`;
-        });
+   conteudo += `<div class="${classe}">
+    - ${i.nome.padEnd(12, '.')} ${i.qtd} ${i.unidade || ''}
+</div>`;
+});
     }
 
     conteudo += `<div class="linha"></div>`;
@@ -475,18 +475,18 @@ function calcularTotal() {
     if (estoqueLanche.length === 0) {
         conteudo += `Sem itens<br>`;
     } else {
-       [...estoqueLanche]
-.sort((a, b) => a.nome.localeCompare(b.nome))
+     [...estoqueLanche]
+.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
 .forEach(i => {
-            let classe = "";
+    let classe = "";
 
-            if (i.qtd <= 2) classe = "critico";
-            else if (i.qtd <= 5) classe = "baixo";
+    if (i.qtd <= 2) classe = "critico";
+    else if (i.qtd <= 5) classe = "baixo";
 
-            conteudo += `<div class="${classe}">
-                - ${i.nome}: ${i.qtd} ${i.unidade}
-            </div>`;
-        });
+    conteudo += `<div class="${classe}">
+    - ${i.nome.padEnd(12, '.')} ${i.qtd} ${i.unidade || ''}
+</div>`;
+});
     }
 
     conteudo += `
