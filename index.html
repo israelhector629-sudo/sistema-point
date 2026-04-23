@@ -384,6 +384,23 @@
     let idLogado = null; let nomeLogado = "";
     let estoqueExtra = [];
     
+   function renderEstoqueExtra() {
+    const corpo = document.getElementById('corpo-extra');
+
+    if (!corpo) return;
+
+    if (estoqueExtra.length === 0) {
+        corpo.innerHTML = `<tr><td style="text-align:center;">Sem itens</td></tr>`;
+        return;
+    }
+
+    corpo.innerHTML = estoqueExtra.map(i => `
+        <tr>
+            <td>${i.nome}</td>
+            <td>${i.qtd} ${i.unidade}</td>
+        </tr>
+    `).join('');
+}
     function inicializar() {
        db.ref('estoque_extra').on('value', snap => {
     const data = snap.val();
