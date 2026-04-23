@@ -261,8 +261,8 @@
         </div>
     
 
-   
-             <div id="pdv" class="card">
+   </div> 
+                <div id="pdv" class="card">
                     <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
                     <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
                     <select id="selProd"></select>
@@ -383,6 +383,7 @@
     let estoque = []; let equipe = [];
     let idLogado = null; let nomeLogado = "";
     let estoqueExtra = [];
+    
     function inicializar() {
        db.ref('estoque_extra').on('value', snap => {
     const data = snap.val();
@@ -412,8 +413,11 @@ renderEstoqueGeral();
        db.ref('estoque_app').on('value', snap => {
     const data = snap.val();
     estoque = data ? Object.values(data).filter(i => i != null) : [];
+    setTimeout(() => {
     renderEstoque();
-    renderEstoqueGeral(); // 🔥 GARANTE render
+    renderEstoqueLanche();
+    renderEstoqueGeral();
+}, 500);
 });
     }
 function calcularTotal() {
@@ -421,9 +425,16 @@ function calcularTotal() {
     const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
 
     const area = document.getElementById('area-alertas');
-if (area) {
+
+    if (!area) return;
+
+    let html = `
+        📊 <b>Resumo:</b><br>
+        🍕 Pizza: ${totalPizza}<br>
+        🍔 Lanche: ${totalLanche}
+    `;
+
     area.innerHTML = html;
-}
 }
    function salvarExtra(event) {
     const n = document.getElementById('eNome').value.trim();
@@ -924,7 +935,8 @@ renderEstoqueGeral();}
     if(estoque.length === 0) {
         document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
         document.getElementById('corpo-estoque-lista').innerHTML = ``;
-        document.getElementById('area-alertas').innerHTML = ``;
+        const area = document.getElementById('area-alertas');
+if (area) area.innerHTML = html;
     } else {
         document.getElementById('selProd').innerHTML = estoque.map(i =>
             `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`
