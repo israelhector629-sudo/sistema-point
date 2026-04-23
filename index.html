@@ -235,40 +235,40 @@
         </div>
     </div>
 
-    <!-- 🔥 NOVA TELA (SEPARADA) -->
-    <div id="estoque-extra" class="card">
-        <h3>🧾 Estoque Geral (Outros)</h3>
+  <!-- 🔥 NOVA TELA (SEPARADA) -->
+<div id="estoque-extra" class="card">
+    <h3>🧾 Estoque Geral (Outros)</h3>
 
-        <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
-            <input type="text" id="eNome" placeholder="Nome do Item">
-            <input type="number" id="eQtd" placeholder="Quantidade">
+    <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+        <input type="text" id="eNome" placeholder="Nome do Item">
+        <input type="number" id="eQtd" placeholder="Quantidade">
 
-            <select id="eUnid">
-                <option>Un</option>
-                <option>Kg</option>
-                <option>L</option>
-            </select>
+        <select id="eUnid">
+            <option>Un</option>
+            <option>Kg</option>
+            <option>L</option>
+        </select>
 
-            <button class="btn-acao" style="background:var(--primary);" onclick="salvarExtra(event)">
-                SALVAR ITEM
-            </button>
-        </div>
+        <button class="btn-acao" style="background:var(--primary);" onclick="salvarExtra(event)">
+            SALVAR ITEM
+        </button>
+    </div>
 
-        <div class="table-res">
-            <table>
-                <tbody id="corpo-extra"></tbody>
-            </table>
-        </div>
-    
+    <div class="table-res">
+        <table>
+            <tbody id="corpo-extra"></tbody>
+        </table>
+    </div>
+</div> <!-- ✅ FECHA CERTO AQUI -->
 
-   </div> 
-                <div id="pdv" class="card">
-                    <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
-                    <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
-                    <select id="selProd"></select>
-                    <input type="number" id="qSai" value="1" step="0.1" placeholder="Quantidade">
-                    <button class="btn-acao" style="background:var(--success);" onclick="baixar(event)"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
-                </div>
+<!-- PDV -->
+<div id="pdv" class="card">
+    <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
+    <p style="color:#666; font-size:14px; margin-bottom:15px;">
+        Selecione o item que foi gasto ou vendido.
+    </p>
+
+    <select id="selProd"></select>
 <div id="estoque-lanche" class="card">
     <h3><i class="fas fa-hamburger" style="color:var(--primary)"></i> Estoque Lanche</h3>
 
