@@ -299,15 +299,10 @@
         </table>
     </div>
 </div>
-          <div id="estoque" class="card">
+        <div id="estoque" class="card">
 
-    <div id="area-alertas" style="
-        background:#fff3cd;
-        padding:10px;
-        border-radius:8px;
-        margin-bottom:10px;
-        font-size:14px;
-    "></div>
+    <div id="area-alertas"></div>
+    <h3>Gestão de Insumos</h3>
 
     <h3>
         <i class="fas fa-boxes" style="color:var(--primary)"></i> 
@@ -425,10 +420,10 @@ function calcularTotal() {
     const totalPizza = estoque.reduce((acc, i) => acc + i.qtd, 0);
     const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
 
-    document.getElementById('area-alertas').innerHTML += `
-        <br><br>📊 Total Pizza: ${totalPizza}
-        <br>📊 Total Lanche: ${totalLanche}
-    `;
+    const area = document.getElementById('area-alertas');
+if (area) {
+    area.innerHTML = html;
+}
 }
    function salvarExtra(event) {
     const n = document.getElementById('eNome').value.trim();
