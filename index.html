@@ -396,21 +396,67 @@
     let estoque = []; let equipe = [];
     let idLogado = null; let nomeLogado = "";
     let estoqueExtra = [];
-    
-   function renderEstoqueExtra() {
-    const corpo = document.getElementById('corpo-extra');
+ function salvarGeral(event) {
 
-    if (!corpo) return;
+    const n = document.getElementById('gNome').value.trim();
+    const q = parseFloat(document.getElementById('gQtd').value);
+    const u = document.getElementById('gUnid').value;
+    const tipo = document.getElementById('gTipo').value;
 
-    if (estoqueExtra.length === 0) {
-        corpo.innerHTML = `<tr><td style="text-align:center;">Sem itens</td></tr>`;
+    if(!n || isNaN(q)) return alert("Preencha corretamente!");
+
+    const item = {
+        id: Date.now(),
+        nome: n,
+        qtd: q,
+        unidade: u
+    };
+
+    if(tipo === "pizza") {
+        estoque.push(item);
+        db.ref('estoque_app').set(estoque);
+    }
+
+    if(tipo === "lanche") {
+        estoqueLanche.push(item);
+        db.ref('estoque_lanche').set(estoqueLanche);
+    }
+
+    if(tipo === "extra") {
+        estoqueExtra.push(item);
+        db.ref('estoque_extra').set(estoqueExtra);
+    }
+
+    renderEstoque();
+    renderEstoqueLanche();
+    renderEstoqueExtra();
+    renderEstoqueGeral();
+
+    document.getElementById('gNome').value = "";
+    document.getElementById('gQtd').value = "";
+}
+    function renderEstoqueGeral() {
+
+    const corpo = document.getElementById('corpo-geral');
+
+    const lista = [
+        ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
+        ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"})),
+        ...estoqueExtra.map(i => ({...i, tipo: "🧾 Outros"}))
+    ];
+
+    if(lista.length === 0) {
+        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
         return;
     }
 
-    corpo.innerHTML = estoqueExtra.map(i => `
+    corpo.innerHTML = lista.map(i => `
         <tr>
             <td>${i.nome}</td>
-            <td>${i.qtd} ${i.unidade}</td>
+            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
+                ${i.qtd} ${i.unidade}
+            </td>
+            <td>${i.tipo}</td>
         </tr>
     `).join('');
 }
