@@ -215,7 +215,11 @@
 
             <div class="main-content">
 
-    <div id="inicio" class="card active"> </div>
+    <div id="inicio" class="card active">
+    <h3>Bem-vindo ao sistema</h3>
+    <p>Selecione uma opção no menu.</p>
+</div> 
+      
 
     <!-- ESTOQUE GERAL (VISUALIZAÇÃO) -->
     <div id="estoque-geral" class="card">
@@ -950,11 +954,12 @@ renderEstoqueGeral();}
     function renderEstoque() {
 
     if(estoque.length === 0) {
-        document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
-        document.getElementById('corpo-estoque-lista').innerHTML = ``;
-        const area = document.getElementById('area-alertas');
-if (area) area.innerHTML = html;
-    } else {
+    document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
+    document.getElementById('corpo-estoque-lista').innerHTML = ``;
+
+    const area = document.getElementById('area-alertas');
+    if (area) area.innerHTML = "Sem itens cadastrados";
+} else {
         document.getElementById('selProd').innerHTML = estoque.map(i =>
             `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`
         ).join('');
