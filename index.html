@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Point da Pizza - estoque</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -463,6 +463,7 @@
     </div>
 </div>  
 <script>
+  const storage = firebase.storage();
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
@@ -1078,15 +1079,55 @@ renderEstoqueGeral();}
                 document.getElementById('app-container').style.display = 'flex';
             }, 600);
             
-            document.getElementById('user-info').innerHTML = `
-    <img src="https://ui-avatars.com/api/?name=${f.nome}&background=e74c3c&color=fff">
+           document.getElementById('user-info').innerHTML = `
+    <label style="cursor:pointer;">
+        <img id="foto-user" 
+             src="${f.foto || 'https://ui-avatars.com/api/?name=' + f.nome}" 
+             style="width:70px;height:70px;border-radius:50%;">
+        
+        <input type="file" accept="image/*" capture="user" 
+               style="display:none" 
+               onchange="uploadFoto(event, ${f.id})">
+    </label>
+
     <h4>${f.nome}</h4>
     <div class="badge">${f.cargo}</div>
 `;
         }
     }
 
-   function alertaGeral() {
+  function uploadFoto(event, id) {
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const ref = storage.ref('fotos/' + id + '.jpg');
+
+    ref.put(file).then(() => {
+
+        ref.getDownloadURL().then(url => {
+
+            // atualizar no array equipe
+            const user = equipe.find(f => f.id === id);
+            if (user) {
+                user.foto = url;
+            }
+
+            // salvar no firebase
+            db.ref('equipe').set(equipe);
+
+            // atualizar imagem na tela
+            document.getElementById('foto-user').src = url;
+
+            alert("Foto atualizada com sucesso 📸🔥");
+        });
+
+    }).catch(err => {
+        console.error(err);
+        alert("Erro ao enviar foto");
+    });
+}
+    function alertaGeral() {
 
     const geral = [...estoque, ...estoqueLanche];
 
