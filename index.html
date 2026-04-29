@@ -865,15 +865,20 @@ function calcularTotal() {
     win.focus();
     win.print();
 }
-    function renderLogin() {
-        document.getElementById('login-grid').innerHTML = equipe.map(f => `
-            <div class="login-card" onclick="entrar(${f.id})">
-                <img src="${f.foto || 'https://via.placeholder.com/100'}">
-                <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">${f.nome}</div>
-                <span style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; color:white;">${f.cargo}</span>
+   function renderLogin() {
+    document.getElementById('login-grid').innerHTML = equipe.map(f => `
+        <div class="login-card" onclick="entrar(${f.id})">
+            <img src="${f.foto || 'img/user.png'}" 
+                 onerror="this.src='img/user.png'">
+            
+            <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">
+                ${f.nome}
             </div>
-        `).join('');
-    }
+
+            <span>${f.cargo}</span>
+        </div>
+    `).join('');
+}
 function removerLanche(id) {
     if(confirm("Excluir item?")) {
         estoqueLanche = estoqueLanche.filter(i => i.id !== id);
@@ -1073,9 +1078,11 @@ renderEstoqueGeral();}
                 document.getElementById('app-container').style.display = 'flex';
             }, 600);
             
-            document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://via.placeholder.com/100'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
-        } else if(p !== null) {
-            alert("Senha Incorreta!");
+            document.getElementById('user-info').innerHTML = `
+    <img src="https://ui-avatars.com/api/?name=${f.nome}&background=e74c3c&color=fff">
+    <h4>${f.nome}</h4>
+    <div class="badge">${f.cargo}</div>
+`;
         }
     }
 
