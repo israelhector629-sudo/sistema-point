@@ -532,7 +532,7 @@
     const lista = [
         ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
         ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"})),
-        ...estoqueExtra.map(i => ({...i, tipo: "🧾 Outros"}))
+        ...estoqueExtra.map(i => ({...i, tipo: "📦 Geral"})) // 🔥 AQUI A MÁGICA
     ];
 
     if(lista.length === 0) {
