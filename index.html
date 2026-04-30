@@ -338,6 +338,7 @@
         <input type="number" id="eQtd" placeholder="Quantidade">
 
         <select id="eUnid">
+            <option>Pct</option>
             <option>Un</option>
             <option>Kg</option>
             <option>L</option>
@@ -525,18 +526,18 @@
     document.getElementById('gNome').value = "";
     document.getElementById('gQtd').value = "";
 }
-    function renderEstoqueGeral() {
+   function renderEstoqueGeral() {
 
     const corpo = document.getElementById('corpo-geral');
 
     const lista = [
-        ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
-        ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"})),
-        ...estoqueExtra.map(i => ({...i, tipo: "📦 Outros"})) // 🔥 AQUI A MÁGICA
+        ...estoque.map(i => ({...i, tipo: "pizza"})),
+        ...estoqueLanche.map(i => ({...i, tipo: "lanche"})),
+        ...estoqueExtra.map(i => ({...i, tipo: "extra"}))
     ];
 
     if(lista.length === 0) {
-        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
+        corpo.innerHTML = `<tr><td colspan="4" style="text-align:center;">Sem itens</td></tr>`;
         return;
     }
 
@@ -547,10 +548,34 @@
                 ${i.qtd} ${i.unidade}
             </td>
             <td>${i.tipo}</td>
+            <td>
+                <button class="btn-mini btn-del" onclick="removerGeral(${i.id}, '${i.tipo}')">
+                    🗑
+                </button>
+            </td>
         </tr>
     `).join('');
 }
-    function inicializar() {
+   function removerGeral(id, tipo) {
+
+    if(!confirm("Excluir item?")) return;
+
+    if(tipo === "pizza") {
+        estoque = estoque.filter(i => i.id !== id);
+        db.ref('estoque_app').set(estoque);
+    }
+
+    if(tipo === "lanche") {
+        estoqueLanche = estoqueLanche.filter(i => i.id !== id);
+        db.ref('estoque_lanche').set(estoqueLanche);
+    }
+
+    if(tipo === "extra") {
+        estoqueExtra = estoqueExtra.filter(i => i.id !== id);
+        db.ref('estoque_extra').set(estoqueExtra);
+    }
+} 
+   function inicializar() {
        db.ref('estoque_extra').on('value', snap => {
     const data = snap.val();
     estoqueExtra = data ? Object.values(data).filter(i => i != null) : [];
