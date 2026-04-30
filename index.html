@@ -532,7 +532,7 @@
     const lista = [
         ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
         ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"})),
-        ...estoqueExtra.map(i => ({...i, tipo: "📦 Geral"})) // 🔥 AQUI A MÁGICA
+        ...estoqueExtra.map(i => ({...i, tipo: "📦 Outros"})) // 🔥 AQUI A MÁGICA
     ];
 
     if(lista.length === 0) {
@@ -630,30 +630,7 @@ function calcularTotal() {
     document.getElementById('eNome').value = "";
     document.getElementById('eQtd').value = "";
 }
-  function renderEstoqueGeral() {
-
-    const corpo = document.getElementById('corpo-geral');
-
-    const lista = [
-        ...estoque.map(i => ({...i, tipo: "🍕 Pizza"})),
-        ...estoqueLanche.map(i => ({...i, tipo: "🍔 Lanche"}))
-    ];
-
-    if(lista.length === 0) {
-        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
-        return;
-    }
-
-    corpo.innerHTML = lista.map(i => `
-        <tr>
-            <td>${i.nome}</td>
-            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
-                ${i.qtd} ${i.unidade}
-            </td>
-            <td>${i.tipo}</td>
-        </tr>
-    `).join('');
-}
+ 
     function imprimirEstoqueGeral() {
 
     let conteudo = `
