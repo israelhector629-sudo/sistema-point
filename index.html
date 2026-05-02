@@ -11,19 +11,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-      #splash-screen {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-    color: white;
-    animation: fadeOut 1s ease forwards;
-    animation-delay: 2.5s;
-}
+     <div id="splash-screen">
+    <img src="logo.png" alt="Logo">
+    <h1>Point</h1>
+    <p>Carregando sistema...</p>
+
+    <div class="progress-bar">
+        <div id="progress"></div>
+    </div>
+</div>
 
 #splash-screen img {
     width: 120px;
@@ -632,31 +628,32 @@
     }
 } 
    function inicializar() {
-       db.ref('estoque_extra').on('value', snap => {
-    const data = snap.val();
-    estoqueExtra = data ? Object.values(data).filter(i => i != null) : [];
-    renderEstoqueExtra();
-    renderEstoqueGeral();
-});
-        db.ref('estoque_lanche').on('value', snap => {
-    const data = snap.val();
-    estoqueLanche = data ? Object.values(data).filter(i => i != null) : [];
-    renderEstoqueLanche();
-renderEstoqueGeral();
-        });
-        db.ref('equipe').on('value', snap => {
-            const data = snap.val();
-            equipe = data ? Object.values(data).filter(f => f != null) : [];
-            
-            if(equipe.length === 0) {
-                equipe = [{id: 1, nome: "Israel", cargo: "Patrão", senha: "5616"}];
-                db.ref('equipe').set(equipe);
-            }
-            
-            renderLogin();
-            renderListaEquipe();
-        });
 
+    db.ref('estoque_extra').once('value', snap => {
+        estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
+        atualizarBarra(25);
+    });
+
+    db.ref('estoque_lanche').once('value', snap => {
+        estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
+        atualizarBarra(25);
+    });
+
+    db.ref('equipe').once('value', snap => {
+        equipe = snap.val() ? Object.values(snap.val()) : [];
+        atualizarBarra(25);
+    });
+
+    db.ref('estoque_app').once('value', snap => {
+        estoque = snap.val() ? Object.values(snap.val()) : [];
+        atualizarBarra(25);
+
+        // 👇 só renderiza quando tudo carregou
+        renderEstoque();
+        renderEstoqueLanche();
+        renderEstoqueGeral();
+    });
+}
        db.ref('estoque_app').on('value', snap => {
     const data = snap.val();
     estoque = data ? Object.values(data).filter(i => i != null) : [];
@@ -1018,7 +1015,21 @@ function mostrarRelatorioSemanal(pizza, lanche) {
     win.focus();
     win.print();
 }
-  function fechamentoSemanal() {
+  let progresso = 0;
+
+function atualizarBarra(valor) {
+    progresso += valor;
+    if (progresso > 100) progresso = 100;
+
+    document.getElementById("progress").style.width = progresso + "%";
+
+    if (progresso >= 100) {
+        setTimeout(() => {
+            document.getElementById("splash-screen").style.display = "none";
+        }, 500);
+    }
+}
+   function fechamentoSemanal() {
 
     db.ref('historico').once('value', snap => {
         const data = snap.val();
