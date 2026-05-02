@@ -629,41 +629,63 @@
 } 
    function inicializar() {
 
-    db.ref('estoque_extra').once('value', snap => {
-        estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
-        atualizarBarra(25);
-    });
+    let carregados = 0;
+    const total = 4;
 
-    db.ref('estoque_lanche').once('value', snap => {
-        estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
-        atualizarBarra(25);
-    });
+    function passoConcluido() {
+        carregados++;
+        atualizarBarra(100 / total);
 
-    db.ref('equipe').once('value', snap => {
-        equipe = snap.val() ? Object.values(snap.val()) : [];
-        atualizarBarra(25);
-    });
+        // 👉 quando tudo carregar
+        if (carregados === total) {
+            finalizarCarregamento();
+        }
+    }
 
-    db.ref('estoque_app').once('value', snap => {
-        estoque = snap.val() ? Object.values(snap.val()) : [];
-        atualizarBarra(25);
-
-        // 👇 só renderiza quando tudo carregou
+    function finalizarCarregamento() {
         renderEstoque();
         renderEstoqueLanche();
         renderEstoqueGeral();
-    });
-}
-       db.ref('estoque_app').on('value', snap => {
-    const data = snap.val();
-    estoque = data ? Object.values(data).filter(i => i != null) : [];
-    setTimeout(() => {
-    renderEstoque();
-    renderEstoqueLanche();
-    renderEstoqueGeral();
-}, 500);
-});
+
+        setTimeout(() => {
+            document.getElementById("splash-screen").style.display = "none";
+        }, 500);
     }
+
+    // 🔥 ESTOQUE EXTRA
+    db.ref('estoque_extra').once('value')
+        .then(snap => {
+            estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
+            passoConcluido();
+        })
+        .catch(() => passoConcluido());
+
+    // 🔥 LANCHE
+    db.ref('estoque_lanche').once('value')
+        .then(snap => {
+            estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
+            passoConcluido();
+        })
+        .catch(() => passoConcluido());
+
+    // 🔥 EQUIPE
+    db.ref('equipe').once('value')
+        .then(snap => {
+            equipe = snap.val() ? Object.values(snap.val()) : [];
+            renderLogin();
+            renderListaEquipe();
+            passoConcluido();
+        })
+        .catch(() => passoConcluido());
+
+    // 🔥 ESTOQUE PRINCIPAL
+    db.ref('estoque_app').once('value')
+        .then(snap => {
+            estoque = snap.val() ? Object.values(snap.val()) : [];
+            passoConcluido();
+        })
+        .catch(() => passoConcluido());
+}
 function calcularTotal() {
     const totalPizza = estoque.reduce((acc, i) => acc + i.qtd, 0);
     const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
