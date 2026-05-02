@@ -714,21 +714,40 @@
     renderEstoqueGeral();
     atualizarDashboard();
 }
-   function inicializar() {
+  function inicializar() {
 
-    let carregados = 0;
-    const total = 4;
+    db.ref('estoque_app').on('value', snap => {
+        estoque = snap.val() ? Object.values(snap.val()) : [];
+        renderEstoque();
+        renderEstoqueGeral();
+        atualizarDashboard();
+    });
 
-    function passoConcluido() {
-        carregados++;
-        atualizarBarra(100 / total);
+    db.ref('estoque_lanche').on('value', snap => {
+        estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
+        renderEstoqueLanche();
+        renderEstoqueGeral();
+        atualizarDashboard();
+    });
 
-        // 👉 quando tudo carregar
-        if (carregados === total) {
-            finalizarCarregamento();
-        }
-    }
+    db.ref('estoque_extra').on('value', snap => {
+        estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
+        renderEstoqueExtra();
+        renderEstoqueGeral();
+        atualizarDashboard();
+    });
 
+    db.ref('equipe').on('value', snap => {
+        equipe = snap.val() ? Object.values(snap.val()) : [];
+        renderLogin();
+        renderListaEquipe();
+    });
+
+    // 🔥 some splash depois de 1.5s independente de tudo
+    setTimeout(() => {
+        document.getElementById("splash-screen").style.display = "none";
+    }, 1500);
+}
     function finalizarCarregamento() {
         renderEstoque();
         renderEstoqueLanche();
@@ -741,7 +760,7 @@
     }
 
     // 🔥 ESTOQUE EXTRA
-    db.ref('estoque_extra').once('value')
+    db.ref('estoque_extra').on('value')
         .then(snap => {
             estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
             passoConcluido();
@@ -749,7 +768,7 @@
         .catch(() => passoConcluido());
 
     // 🔥 LANCHE
-    db.ref('estoque_lanche').once('value')
+    db.ref('estoque_lanche').on('value')
         .then(snap => {
             estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
             passoConcluido();
@@ -757,7 +776,7 @@
         .catch(() => passoConcluido());
 
     // 🔥 EQUIPE
-    db.ref('equipe').once('value')
+    db.ref('equipe').on('value')
         .then(snap => {
             equipe = snap.val() ? Object.values(snap.val()) : [];
             renderLogin();
@@ -767,7 +786,7 @@
         .catch(() => passoConcluido());
 
     // 🔥 ESTOQUE PRINCIPAL
-    db.ref('estoque_app').once('value')
+    db.ref('estoque_app').on('value')
         .then(snap => {
             estoque = snap.val() ? Object.values(snap.val()) : [];
             passoConcluido();
