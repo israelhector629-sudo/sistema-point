@@ -24,15 +24,21 @@
     font-weight: bold;
     color: #e74c3c;
 }
-       <div id="splash-screen">
-    <img src="logo.png" alt="Logo">
-    <h1>Point</h1>
-    <p>Carregando sistema...</p>
+      .progress-bar {
+    width: 200px;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+}
 
-    <div class="progress-bar">
-        <div id="progress"></div>
-    </div>
-</div>
+#progress {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width 0.3s ease;
+}
 
 #splash-screen img {
     width: 120px;
@@ -701,7 +707,13 @@
         estoqueExtra = estoqueExtra.filter(i => i.id !== id);
         db.ref('estoque_extra').set(estoqueExtra);
     }
-} 
+
+    // 🔥 FALTAVA ISSO
+    renderEstoque();
+    renderEstoqueLanche();
+    renderEstoqueGeral();
+    atualizarDashboard();
+}
    function inicializar() {
 
     let carregados = 0;
@@ -839,7 +851,7 @@ function calcularTotal() {
     <body>
 
     <div class="center">
-        <b>POINT DA PIZZA</b><br>
+        <b>RESTAURANTE</b><br>
         ESTOQUE GERAL
     </div>
 
@@ -950,7 +962,7 @@ function calcularTotal() {
     <body>
 
         <div class="center">
-            <b>POINT DA PIZZA</b><br>
+            <b>RESTAURANTE</b><br>
             ----------------------
         </div>
 
@@ -1071,7 +1083,7 @@ function mostrarRelatorioSemanal(pizza, lanche) {
     <body>
 
     <div class="center">
-        <b>POINT DA PIZZA</b><br>
+        <b>RESTAURANTE</b><br>
         FECHAMENTO SEMANAL
     </div>
 
@@ -1319,15 +1331,16 @@ renderEstoqueGeral();}
 
     renderEstoqueGeral();
 }
-  function ajustarQtd(id, delta) {
+ function ajustarQtd(id, delta) {
     const item = estoque.find(x => x.id === id);
     if(item) {
         item.qtd = Math.max(0, item.qtd + delta);
 
         db.ref('estoque_app').set(estoque);
 
-        renderEstoque();        // 👈 ADICIONA
-        renderEstoqueGeral();   // 👈 ADICIONA
+        renderEstoque();
+        renderEstoqueGeral();
+        atualizarDashboard(); // 🔥 ADICIONA ISSO
     }
 }
    function enviarRelatorio() {
