@@ -11,7 +11,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-     <div id="splash-screen">
+    .card-box {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.card-box span {
+    font-size: 22px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+       <div id="splash-screen">
     <img src="logo.png" alt="Logo">
     <h1>Point</h1>
     <p>Carregando sistema...</p>
@@ -326,7 +339,8 @@
             <button class="menu-toggle-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
         </div>
 
-        <div class="app-body">
+      
+       <div class="app-body">
             <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
             <div class="sidebar" id="sidebar">
                 <div class="user-info" id="user-info"></div>
@@ -356,9 +370,37 @@
             <div class="main-content">
 
     <div id="inicio" class="card active">
-    <h3>Bem-vindo ao sistema</h3>
-    <p>Selecione uma opção no menu.</p>
-</div> 
+    <h3>📊 Dashboard</h3>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+        
+        <div class="card-box">
+            <h4>📦 Total Itens</h4>
+            <span id="dTotal">0</span>
+        </div>
+
+        <div class="card-box">
+            <h4>⚠️ Baixo Estoque</h4>
+            <span id="dBaixo">0</span>
+        </div>
+
+        <div class="card-box">
+            <h4>🍕 Pizza</h4>
+            <span id="dPizza">0</span>
+        </div>
+
+        <div class="card-box">
+            <h4>🍔 Lanche</h4>
+            <span id="dLanche">0</span>
+        </div>
+
+    </div>
+
+    <div style="margin-top:20px;">
+        <h4>🔥 Itens críticos</h4>
+        <div id="lista-criticos"></div>
+    </div>
+</div>
       
 <div style="text-align:center; margin-top:20px; color:#999; font-size:12px;">
     Desenvolvido por <b>Israel Dev</b> 🚀
@@ -539,7 +581,39 @@
     let estoque = []; let equipe = [];
     let idLogado = null; let nomeLogado = "";
     let estoqueExtra = [];
- function salvarGeral(event) {
+ function atualizarDashboard() {
+
+    const totalItens = estoque.length + estoqueLanche.length;
+
+    const baixo = [
+        ...estoque.filter(i => i.qtd <= 5),
+        ...estoqueLanche.filter(i => i.qtd <= 5)
+    ];
+
+    document.getElementById('dTotal').innerText = totalItens;
+    document.getElementById('dBaixo').innerText = baixo.length;
+    document.getElementById('dPizza').innerText = estoque.length;
+    document.getElementById('dLanche').innerText = estoqueLanche.length;
+
+    const lista = document.getElementById('lista-criticos');
+
+    if(baixo.length === 0){
+        lista.innerHTML = "✅ Tudo ok";
+        return;
+    }
+
+    lista.innerHTML = baixo.map(i => `
+        <div style="
+            background:#ffe6e6;
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:5px;
+        ">
+            ⚠️ ${i.nome} (${i.qtd})
+        </div>
+    `).join('');
+}
+   function salvarGeral(event) {
 
     const n = document.getElementById('gNome').value.trim();
     const q = parseFloat(document.getElementById('gQtd').value);
@@ -574,6 +648,7 @@
     renderEstoqueLanche();
     renderEstoqueExtra();
     renderEstoqueGeral();
+      atualizarDashboard();
 
     document.getElementById('gNome').value = "";
     document.getElementById('gQtd').value = "";
@@ -646,6 +721,7 @@
         renderEstoque();
         renderEstoqueLanche();
         renderEstoqueGeral();
+       atualizarDashboard();
 
         setTimeout(() => {
             document.getElementById("splash-screen").style.display = "none";
@@ -726,6 +802,7 @@ function calcularTotal() {
 
     renderEstoqueExtra();
     renderEstoqueGeral();
+      atualizarDashboard();
 
     document.getElementById('eNome').value = "";
     document.getElementById('eQtd').value = "";
