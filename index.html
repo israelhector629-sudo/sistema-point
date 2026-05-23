@@ -365,228 +365,26 @@
             <div class="sidebar" id="sidebar">
                 <div class="user-info" id="user-info"></div>
                 <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
-                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
-                <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque Pizza</button>
-               <button class="menu-btn" onclick="tab('estoque-lanche', this)">
-    <i class="fas fa-hamburger"></i> Estoque Lanche
-</button>
-               <button class="menu-btn" onclick="tab('estoque-geral', this)">
-    <i class="fas fa-layer-group"></i> Estoque Geral
-</button>
-               <button class="menu-btn" onclick="tab('estoque-extra', this)">
-    <i class="fas fa-plus"></i> Adicionar Geral
-</button>
-                <button class="btn-acao" style="background:#34495e;" onclick="imprimirEstoqueGeral()">
-    IMPRIMIR ESTOQUE GERAL
-</button>
-                <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
-                <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
-                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
-            <button class="btn-acao" style="background:#8e44ad;" onclick="fechamentoSemanal()">
-    FECHAMENTO SEMANAL
-</button>
-            </div>
-
-            <div class="main-content">
-
-    <div id="inicio" class="card active">
-    <h3>📊 Dashboard</h3>
-
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-        
-        <div class="card-box">
-            <h4>📦 Total Itens</h4>
-            <span id="dTotal">0</span>
-        </div>
-
-        <div class="card-box">
-            <h4>⚠️ Baixo Estoque</h4>
-            <span id="dBaixo">0</span>
-        </div>
-
-        <div class="card-box">
-            <h4>🍕 Pizza</h4>
-            <span id="dPizza">0</span>
-        </div>
-
-        <div class="card-box">
-            <h4>🍔 Lanche</h4>
-            <span id="dLanche">0</span>
-        </div>
-
-    </div>
-
-    <div style="margin-top:20px;">
-        <h4>🔥 Itens críticos</h4>
-        <div id="lista-criticos"></div>
-    </div>
-</div>
-      
-<div style="text-align:center; margin-top:20px; color:#999; font-size:12px;">
-    Desenvolvido por <b>Israel Dev</b> 🚀
-</div>
-    <!-- ESTOQUE GERAL (VISUALIZAÇÃO) -->
-    <div id="estoque-geral" class="card">
-        <h3><i class="fas fa-layer-group" style="color:var(--primary)"></i> Estoque Geral</h3>
-
-        <div class="table-res">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Produto</th>
-                        <th>Qtd</th>
-                        <th>Tipo</th>
-                    </tr>
-                </thead>
-                <tbody id="corpo-geral"></tbody>
-            </table>
-        </div>
-    </div>
-
-  <!-- 🔥 NOVA TELA (SEPARADA) -->
-<div id="estoque-extra" class="card">
-    <h3>🧾 Estoque Geral (Outros)</h3>
-
-    <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
-        <input type="text" id="eNome" placeholder="Nome do Item">
-        <input type="number" id="eQtd" placeholder="Quantidade">
-
-        <select id="eUnid">
-            <option>Pct</option>
-            <option>Un</option>
-            <option>Kg</option>
-            <option>L</option>
-        </select>
-
-        <button class="btn-acao" style="background:var(--primary);" onclick="salvarExtra(event)">
-            SALVAR ITEM
-        </button>
-    </div>
-
-    <div class="table-res">
-        <table>
-            <tbody id="corpo-extra"></tbody>
-        </table>
-    </div>
-</div> <!-- ✅ FECHA CERTO AQUI -->
-
-<!-- PDV -->
-<div id="pdv" class="card">
-    <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
-    <p style="color:#666; font-size:14px; margin-bottom:15px;">
-        Selecione o item que foi gasto ou vendido.
-    </p>
-
-    <select id="selProd"></select>
-
-<input type="number" id="qSai" value="1">
-
-<button class="btn-acao" style="background:var(--success);" onclick="baixar(event)">
-    DAR BAIXA
+             
+       <button class="menu-btn active" onclick="tab('inicio', this)">
+    <i class="fas fa-home"></i> Dashboard
 </button>
 
-</div> <!-- ✅ FECHA PDV AQUI -->
-
-<div id="ESTOQUE CAMISETA BRANCAS" class="card">
-    <h3><i class="fas fa-hamburger" style="color:var(--primary)"></i> Estoque CAMISETAS</h3>
-
-    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
-        <input type="text" id="lNome" placeholder="Nome do Item">
-        <input type="number" id="lQtd" placeholder="Quantidade">
-        <select id="lUnid">
-            <option>M</option>
-            <option>G</option>
-            <option>P</option>
-           <option>GG</option>
-           <option>EG</option>
-        </select>
-
-        <button class="btn-acao" style="background:var(--primary);" onclick="salvarLanche(event)">
-            SALVAR ITEM
-        </button>
-    </div>
-
-    <div class="table-res">
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Qtd</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="corpo-lanche"></tbody>
-        </table>
-    </div>
-</div>
-        <div id="estoque" class="card">
-
-    <div id="area-alertas"></div>
-    <h3>Gestão de Insumos</h3>
-
-    <h3>
-        <i class="fas fa-boxes" style="color:var(--primary)"></i> 
-        Gestão de Insumos
-    </h3>
-
-    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px;">
-      
-        <input type="text" id="iNome" placeholder="Nome do Item (Ex: Massa)">
-        <input type="number" id="iQtd" placeholder="Quantidade Total">
-        <select id="iUnid">
-            <option>Un</option>
-            <option>Kg</option>
-            <option>Pct</option>
-            <option>L</option>
-        </select>
-
-        <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem(event)">
-            <i class="fas fa-save"></i> SALVAR NOVO ITEM
-        </button>
-    </div>
-
-    <div class="table-res">
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Qtd</th>
-                    <th style="text-align:center;">Ações</th>
-                </tr>
-            </thead>
-            <tbody id="corpo-estoque-lista"></tbody>
-        </table>
-    </div>
-</div>
-
-                <div id="relatorio" class="card">
-    <h3>...</h3>
-
-   <button class="btn-acao" style="background:var(--secondary);" onclick="imprimirRelatorio()">
-    IMPRIMIR RELATÓRIO
+<button class="menu-btn" onclick="tab('produtos', this)">
+    <i class="fas fa-shirt"></i> Produtos
 </button>
 
-<button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()">
-    ENVIAR NO WHATSAPP
+<button class="menu-btn" onclick="tab('caixa', this)">
+    <i class="fas fa-cash-register"></i> Frente de Caixa
 </button>
-</div> <!-- FECHA AQUI -->
 
-<div id="config" class="card">
-                    <h3><i class="fas fa-users" style="color:var(--primary)"></i> Gerenciar Equipe</h3>
-                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
-                        <input type="text" id="fNome" placeholder="Nome do Funcionário">
-                        <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Atendente</option><option>Patrão</option></select>
-                        <input type="password" id="fSenha" placeholder="Senha de Acesso (Ex: 1234)">
-                        <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc(event)"><i class="fas fa-user-plus"></i> CADASTRAR MEMBRO</button>
-                    </div>
-                    <h4 style="margin-top: 20px; color: #555; border-bottom: 2px solid #eee; padding-bottom: 5px;">Equipe Cadastrada</h4>
-                    <div id="lista-equipe-del" style="margin-top:10px;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>  
-<script>
+<button class="menu-btn" onclick="tab('financeiro', this)">
+    <i class="fas fa-dollar-sign"></i> Fluxo de Caixa
+</button>
+
+<button class="menu-btn" onclick="tab('config', this)">
+    <i class="fas fa-users"></i> Equipe
+</button>
     const firebaseConfig = {
       apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
       authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
