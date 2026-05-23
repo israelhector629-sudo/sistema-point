@@ -387,7 +387,11 @@ onclick="abrirCard('relatorio', this)">
             <i class="fas fa-box"></i>
             Produtos
         </button>
-
+<button class="menu-btn"
+onclick="abrirCard('orcamento', this)">
+    <i class="fas fa-file-invoice-dollar"></i>
+    Orçamento
+</button>
         <button class="menu-btn"
         onclick="abrirCard('caixa', this)">
             <i class="fas fa-cash-register"></i>
@@ -537,6 +541,64 @@ Total Vendido
 </table>
 
 </div>
+
+</div>
+       <!-- ========================= -->
+<!-- ORÇAMENTO -->
+<!-- ========================= -->
+
+<div class="card" id="orcamento">
+
+<h2 style="margin-bottom:15px;">
+📄 Pedido de Orçamento
+</h2>
+
+<select id="orcProduto"></select>
+
+<input type="number"
+id="orcQtd"
+placeholder="Quantidade">
+
+<select id="orcEstampa">
+
+<option value="">
+Tipo de Estampa
+</option>
+
+<option value="DTF">
+DTF
+</option>
+
+<option value="SUBLIMAÇÃO">
+SUBLIMAÇÃO
+</option>
+
+</select>
+
+<button class="btn-acao"
+style="background:#3498db;"
+onclick="gerarOrcamento()">
+
+Gerar Orçamento
+
+</button>
+
+<div id="resultadoOrcamento"
+style="
+margin-top:20px;
+background:#f8f9fa;
+padding:15px;
+border-radius:10px;
+display:none;
+">
+</div>
+
+<button class="btn-acao btn-whatsapp"
+onclick="enviarWhatsapp()">
+
+Enviar no WhatsApp
+
+</button>
 
 </div>
 <!-- ========================= -->
@@ -817,15 +879,30 @@ ${i.estampa}
 
   `).join('');
 
-  select.innerHTML = estoque.map(i => `
+select.innerHTML = estoque.map(i => `
 
-    <option value="${i.id}">
-      ${i.nome} (R$ ${i.preco})
-    </option>
+<option value="${i.id}">
+${i.nome} (R$ ${i.preco})
+</option>
 
-  `).join('');
+`).join('');
+
+const orcSelect =
+document.getElementById('orcProduto');
+
+if(orcSelect){
+
+orcSelect.innerHTML = estoque.map(i => `
+
+<option value="${i.id}">
+${i.nome} (R$ ${i.preco})
+</option>
+
+`).join('');
 
 }
+
+
 
 window.ajustarQtd = function(id, delta) {
 
@@ -1123,7 +1200,122 @@ document.getElementById('app-container')
 .style.display = 'flex';
 
 }, 2500);
-window.onload = inicializar;
+let textoWhatsapp = "";
+
+window.gerarOrcamento = function() {
+
+    const id =
+    document.getElementById('orcProduto').value;
+
+    const qtd =
+    parseInt(
+    document.getElementById('orcQtd').value
+    );
+
+    const estampa =
+    document.getElementById('orcEstampa').value;
+
+    const item =
+    estoque.find(i => i.id == id);
+
+    if(!item) return;
+
+    if(isNaN(qtd) || qtd <= 0) {
+
+        alert("Digite a quantidade");
+
+        return;
+    }
+
+    if(!estampa) {
+
+        alert("Selecione a estampa");
+
+        return;
+    }
+
+    const total =
+    qtd * item.preco;
+
+    const custo =
+    qtd * item.custo;
+
+    const lucro =
+    total - custo;
+
+    document.getElementById(
+    'resultadoOrcamento'
+    ).style.display = 'block';
+
+    document.getElementById(
+    'resultadoOrcamento'
+    ).innerHTML = `
+
+    <h3 style="margin-bottom:10px;">
+    📄 ORÇAMENTO
+    </h3>
+
+    <p><b>Produto:</b>
+    ${item.nome}</p>
+
+    <p><b>Estampa:</b>
+    ${estampa}</p>
+
+    <p><b>Quantidade:</b>
+    ${qtd}</p>
+
+    <p><b>Valor Unitário:</b>
+    R$ ${item.preco.toFixed(2)}</p>
+
+    <hr style="margin:10px 0;">
+
+    <h2 style="color:green;">
+    TOTAL:
+    R$ ${total.toFixed(2)}
+    </h2>
+
+    `;
+
+    textoWhatsapp = `
+
+📄 *ORÇAMENTO NOXARTE*
+
+👕 Produto: ${item.nome}
+
+🖨 Estampa: ${estampa}
+
+📦 Quantidade: ${qtd}
+
+💰 Valor Unitário:
+R$ ${item.preco.toFixed(2)}
+
+✅ TOTAL:
+R$ ${total.toFixed(2)}
+
+Obrigado pelo contato 🤝
+NOXARTE
+
+`;
+
+}
+
+window.enviarWhatsapp = function() {
+
+    if(!textoWhatsapp) {
+
+        alert("Gere um orçamento primeiro");
+
+        return;
+    }
+
+    const url =
+
+`https://wa.me/?text=${encodeURIComponent(textoWhatsapp)}`;
+
+    window.open(url, '_blank');
+
+}
+   window.onload = inicializar;
 
 </script>
 </body>
