@@ -416,7 +416,7 @@ onclick="abrirCard('relatorio', this)">
 <input type="text" id="iUnid" placeholder="Unidade (un, pct, mt...)">
 
 <input type="number" id="iPreco" placeholder="Preço da peça">
-
+<input type="number" id="iCusto" placeholder="Custo da peça">
 <button class="btn-acao"
 style="background:var(--primary);"
 onclick="salvarItem(event)">
@@ -514,7 +514,8 @@ Total Vendido
 <tr>
 <th>Produto</th>
 <th>Qtd</th>
-<th>Valor</th>
+<th>Venda</th>
+<th>Lucro</th>
 <th>Hora</th>
 </tr>
 </thead>
@@ -687,8 +688,10 @@ window.salvarItem = function(event) {
 
   const preco =
     parseFloat(document.getElementById('iPreco').value);
-
-  if(!nome || isNaN(qtd) || isNaN(preco)) {
+const custo = parseFloat(
+document.getElementById('iCusto').value
+);
+if(!nome || isNaN(qtd) || isNaN(preco) || isNaN(custo)) {
 
     alert("Preencha corretamente");
 
@@ -705,7 +708,9 @@ window.salvarItem = function(event) {
 
     unidade: unid,
 
-    preco
+    preco,
+custo
+
 
   });
 
@@ -715,6 +720,7 @@ window.salvarItem = function(event) {
   document.getElementById('iQtd').value = "";
   document.getElementById('iUnid').value = "";
   document.getElementById('iPreco').value = "";
+   document.getElementById('iCusto').value = "";
 
   renderEstoque();
 
@@ -866,21 +872,28 @@ window.realizarVenda = function() {
   item.qtd -= qtd;
 
   const total = qtd * item.preco;
+const gasto =
+qtd * item.custo;
 
+const lucro =
+total - gasto;
   set(ref(db, 'estoque_camisetas'), estoque);
 
   push(ref(db, 'vendas'), {
 
-    produto: item.nome,
+produto: item.nome,
 
-    quantidade: qtd,
+quantidade: qtd,
 
-    valor: total,
+valor: total,
 
-    data: new Date().toISOString()
+gasto: gasto,
 
-  });
+lucro: lucro,
 
+data: new Date().toISOString()
+
+});
   document.getElementById('totalVenda')
     .innerHTML = `
       ✅ Venda realizada
@@ -998,8 +1011,12 @@ window.atualizarRelatorio = function() {
             <td>${v.quantidade}</td>
 
             <td>
-            R$ ${v.valor.toFixed(2)}
-            </td>
+R$ ${v.valor.toFixed(2)}
+</td>
+
+<td style="color:green;font-weight:bold;">
+R$ ${v.lucro.toFixed(2)}
+</td>
 
             <td>${hora}</td>
 
