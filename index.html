@@ -1052,6 +1052,76 @@ R$ ${v.lucro.toFixed(2)}
     }).join('');
 
 }
+   // SPLASH SCREEN
+window.abrirCard = function(id, botao){
+
+document.querySelectorAll('.card')
+.forEach(c => c.classList.remove('active'));
+
+document.getElementById(id)
+.classList.add('active');
+
+document.querySelectorAll('.menu-btn')
+.forEach(b => b.classList.remove('active'));
+
+if(botao)
+botao.classList.add('active');
+
+}
+ window.toggleMenu = function(){
+
+document.getElementById('sidebar')
+.classList.toggle('open');
+
+document.getElementById('overlay')
+.classList.toggle('active');
+
+}
+   window.addEventListener('load', () => {
+
+let progress = 0;
+
+const barra =
+document.getElementById('progress');
+
+const intervalo = setInterval(() => {
+
+progress += 10;
+
+barra.style.width = progress + '%';
+
+if(progress >= 100){
+
+clearInterval(intervalo);
+
+// some splash
+setTimeout(() => {
+
+document.getElementById('splash-screen')
+.style.animation =
+'fadeOut 0.6s forwards';
+
+// abre login
+document.getElementById('login-screen')
+.style.display = 'flex';
+
+}, 400);
+
+}
+
+}, 120);
+
+});
+   // LOGIN AUTOMÁTICO
+setTimeout(() => {
+
+document.getElementById('login-screen')
+.style.display = 'none';
+
+document.getElementById('app-container')
+.style.display = 'flex';
+
+}, 2500);
 window.onload = inicializar;
 
 </script>
