@@ -474,27 +474,37 @@ style="margin-top:20px;"></div>
 
 </div>
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  push
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_KEY",
-  authDomain: "SEU_APP.firebaseapp.com",
-  databaseURL: "https://SEU_APP-default-rtdb.firebaseio.com",
-  projectId: "SEU_APP",
-  storageBucket: "SEU_APP.appspot.com",
-  messagingSenderId: "123456",
-  appId: "123456"
+  apiKey: "AIzaSyCKHlgr5xT0jQgqHT3i6nc-xTN7xFNcyqw",
+  authDomain: "noxarte-caixa.firebaseapp.com",
+  databaseURL: "https://noxarte-caixa-default-rtdb.firebaseio.com",
+  projectId: "noxarte-caixa",
+  storageBucket: "noxarte-caixa.firebasestorage.app",
+  messagingSenderId: "664643333716",
+  appId: "1:664643333716:web:4ead3af8eafaac8cb3c7c1"
 };
 
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-const db = firebase.database();
+const db = getDatabase(app);
 
 let estoque = [];
 
-function inicializar() {
+window.inicializar = function() {
 
-    db.ref('estoque_camisetas').on('value', snap => {
+    onValue(ref(db, 'estoque_camisetas'), snap => {
 
         estoque = snap.val()
             ? Object.values(snap.val())
@@ -506,7 +516,7 @@ function inicializar() {
     });
 }
 
-function salvarItem(event) {
+window.salvarItem = function(event) {
 
     const nome = document.getElementById('iNome').value.trim();
 
@@ -541,7 +551,7 @@ function salvarItem(event) {
 
     });
 
-    db.ref('estoque_camisetas').set(estoque);
+    set(ref(db, 'estoque_camisetas'), estoque);
 
     document.getElementById('iNome').value = "";
     document.getElementById('iQtd').value = "";
@@ -562,7 +572,7 @@ function salvarItem(event) {
     }, 1500);
 }
 
-function renderEstoque() {
+window.renderEstoque = function() {
 
     const corpo =
         document.getElementById('corpo-estoque-lista');
@@ -632,7 +642,7 @@ function renderEstoque() {
     `).join('');
 }
 
-function ajustarQtd(id, delta) {
+window.ajustarQtd = function(id, delta) {
 
     const item =
         estoque.find(i => i.id === id);
@@ -644,14 +654,14 @@ function ajustarQtd(id, delta) {
     if(item.qtd < 0)
         item.qtd = 0;
 
-    db.ref('estoque_camisetas').set(estoque);
+    set(ref(db, 'estoque_camisetas'), estoque);
 
     renderEstoque();
 
     atualizarDashboard();
 }
 
-function removerProduto(id) {
+window.removerProduto = function(id) {
 
     if(!confirm("Excluir produto?"))
         return;
@@ -659,14 +669,14 @@ function removerProduto(id) {
     estoque =
         estoque.filter(i => i.id !== id);
 
-    db.ref('estoque_camisetas').set(estoque);
+    set(ref(db, 'estoque_camisetas'), estoque);
 
     renderEstoque();
 
     atualizarDashboard();
 }
 
-function realizarVenda() {
+window.realizarVenda = function() {
 
     const id =
         document.getElementById('produtoVenda').value;
@@ -700,10 +710,9 @@ function realizarVenda() {
     const total =
         qtd * item.preco;
 
-    db.ref('estoque_camisetas')
-        .set(estoque);
+    set(ref(db, 'estoque_camisetas'), estoque);
 
-    db.ref('vendas').push({
+    push(ref(db, 'vendas'), {
 
         produto: item.nome,
 
@@ -728,7 +737,7 @@ function realizarVenda() {
     atualizarDashboard();
 }
 
-function atualizarDashboard() {
+window.atualizarDashboard = function() {
 
     document.getElementById('dTotal')
         .innerText = estoque.length;
