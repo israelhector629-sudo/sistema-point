@@ -892,16 +892,17 @@ document.getElementById('orcProduto');
 
 if(orcSelect){
 
-orcSelect.innerHTML = estoque.map(i => `
+  orcSelect.innerHTML = estoque.map(i => `
 
-<option value="${i.id}">
-${i.nome} (R$ ${i.preco})
-</option>
+    <option value="${i.id}">
+      ${i.nome} (R$ ${i.preco})
+    </option>
 
-`).join('');
+  `).join('');
 
 }
 
+} // <-- FECHA renderEstoque AQUI
 
 
 window.ajustarQtd = function(id, delta) {
