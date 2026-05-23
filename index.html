@@ -371,7 +371,12 @@
             <span class="badge">Administrador</span>
         </div>
 
-        <button class="menu-btn active"
+      <button class="menu-btn"
+onclick="abrirCard('relatorio', this)">
+    <i class="fas fa-chart-bar"></i>
+    Relatório
+</button>
+       <button class="menu-btn active"
         onclick="abrirCard('inicio', this)">
             <i class="fas fa-chart-line"></i>
             Dashboard
@@ -470,7 +475,57 @@ color:#27ae60;
 "></div>
 
 </div>
+<!-- ========================= -->
+<!-- RELATÓRIO DE VENDAS -->
+<!-- ========================= -->
 
+<div class="card" id="relatorio">
+
+<h2 style="margin-bottom:15px;">
+📈 Relatório do Dia
+</h2>
+
+<div style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+margin-bottom:20px;
+">
+
+<div class="card-box">
+Vendas Hoje
+<br>
+<span id="vendasHoje">0</span>
+</div>
+
+<div class="card-box">
+Total Vendido
+<br>
+<span id="valorHoje">R$ 0.00</span>
+</div>
+
+</div>
+
+<div class="table-res">
+
+<table>
+
+<thead>
+<tr>
+<th>Produto</th>
+<th>Qtd</th>
+<th>Valor</th>
+<th>Hora</th>
+</tr>
+</thead>
+
+<tbody id="lista-vendas"></tbody>
+
+</table>
+
+</div>
+
+</div>
 <!-- ========================= -->
 <!-- DASHBOARD -->
 <!-- ========================= -->
@@ -538,6 +593,8 @@ const db = getDatabase(app);
 
 let estoque = [];
 
+let vendas = [];
+
 window.inicializar = function () {
 
   // Splash screen
@@ -578,7 +635,15 @@ window.inicializar = function () {
   });
 
 }
+onValue(ref(db, 'vendas'), snap => {
 
+    vendas = snap.val()
+        ? Object.values(snap.val())
+        : [];
+
+    atualizarRelatorio();
+
+});
 window.abrirCard = function(id, botao) {
 
   document.querySelectorAll('.card').forEach(c => {
@@ -879,7 +944,72 @@ window.atualizarDashboard = function() {
     `).join('');
 
 }
+window.atualizarRelatorio = function() {
 
+    const hoje = new Date()
+        .toISOString()
+        .split('T')[0];
+
+    const vendasHoje = vendas.filter(v => {
+
+        return v.data.startsWith(hoje);
+
+    });
+
+    document.getElementById('vendasHoje')
+        .innerText = vendasHoje.length;
+
+    const total = vendasHoje.reduce((acc, v) => {
+
+        return acc + v.valor;
+
+    }, 0);
+
+    document.getElementById('valorHoje')
+        .innerText = "R$ " + total.toFixed(2);
+
+    const lista =
+        document.getElementById('lista-vendas');
+
+    if(vendasHoje.length === 0) {
+
+        lista.innerHTML = `
+        <tr>
+            <td colspan="4">
+            Nenhuma venda hoje
+            </td>
+        </tr>
+        `;
+
+        return;
+    }
+
+    lista.innerHTML = vendasHoje.reverse().map(v => {
+
+        const hora = new Date(v.data)
+            .toLocaleTimeString('pt-BR');
+
+        return `
+
+        <tr>
+
+            <td>${v.produto}</td>
+
+            <td>${v.quantidade}</td>
+
+            <td>
+            R$ ${v.valor.toFixed(2)}
+            </td>
+
+            <td>${hora}</td>
+
+        </tr>
+
+        `;
+
+    }).join('');
+
+}
 window.onload = inicializar;
 
 </script>
