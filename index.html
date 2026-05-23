@@ -358,7 +358,44 @@
             </div>
             <button class="menu-toggle-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
         </div>
+<div class="app-body">
 
+    <div class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <h2>NOXARTE</h2>
+        </div>
+
+        <div class="user-info">
+            <img src="logo.png">
+            <h4>Israel Dev</h4>
+            <span class="badge">Administrador</span>
+        </div>
+
+        <button class="menu-btn active"
+        onclick="abrirCard('inicio', this)">
+            <i class="fas fa-chart-line"></i>
+            Dashboard
+        </button>
+
+        <button class="menu-btn"
+        onclick="abrirCard('produtos', this)">
+            <i class="fas fa-box"></i>
+            Produtos
+        </button>
+
+        <button class="menu-btn"
+        onclick="abrirCard('caixa', this)">
+            <i class="fas fa-cash-register"></i>
+            Frente de Caixa
+        </button>
+
+    </div>
+
+    <div class="overlay" id="overlay"
+    onclick="toggleMenu()"></div>
+
+    <div class="main-content">
       
        <!-- ========================= -->
 <!-- CARD PRODUTOS -->
@@ -487,11 +524,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCKHlgr5xT0jQgqHT3i6nc-xTN7xFNcyqw",
+  apiKey: "SUA_API_KEY",
   authDomain: "noxarte-caixa.firebaseapp.com",
   databaseURL: "https://noxarte-caixa-default-rtdb.firebaseio.com",
   projectId: "noxarte-caixa",
-  storageBucket: "noxarte-caixa.firebasestorage.app",
+  storageBucket: "noxarte-caixa.appspot.com",
   messagingSenderId: "664643333716",
   appId: "1:664643333716:web:4ead3af8eafaac8cb3c7c1"
 };
@@ -502,290 +539,346 @@ const db = getDatabase(app);
 
 let estoque = [];
 
-window.inicializar = function() {
+window.inicializar = function () {
 
-    onValue(ref(db, 'estoque_camisetas'), snap => {
+  // Splash screen
+  let progresso = 0;
 
-        estoque = snap.val()
-            ? Object.values(snap.val())
-            : [];
+  const barra = document.getElementById("progress");
 
-        renderEstoque();
+  const interval = setInterval(() => {
 
-        atualizarDashboard();
-    });
+    progresso += 10;
+
+    barra.style.width = progresso + "%";
+
+    if (progresso >= 100) {
+
+      clearInterval(interval);
+
+      document.getElementById("splash-screen").style.display = "none";
+
+      document.getElementById("login-screen").style.display = "none";
+
+      document.getElementById("app-container").style.display = "flex";
+    }
+
+  }, 150);
+
+  // Firebase
+  onValue(ref(db, 'estoque_camisetas'), snap => {
+
+    estoque = snap.val()
+      ? Object.values(snap.val())
+      : [];
+
+    renderEstoque();
+
+    atualizarDashboard();
+
+  });
+
+}
+
+window.abrirCard = function(id, botao) {
+
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('active');
+  });
+
+  document.getElementById(id).classList.add('active');
+
+  document.querySelectorAll('.menu-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  botao.classList.add('active');
+
+  if(window.innerWidth <= 768) {
+    toggleMenu();
+  }
+
+}
+
+window.toggleMenu = function() {
+
+  document.getElementById('sidebar')
+    .classList.toggle('open');
+
+  document.getElementById('overlay')
+    .classList.toggle('active');
+
 }
 
 window.salvarItem = function(event) {
 
-    const nome = document.getElementById('iNome').value.trim();
+  const nome =
+    document.getElementById('iNome').value.trim();
 
-    const qtd = parseInt(
-        document.getElementById('iQtd').value
-    );
+  const qtd =
+    parseInt(document.getElementById('iQtd').value);
 
-    const unid = document.getElementById('iUnid').value;
+  const unid =
+    document.getElementById('iUnid').value;
 
-    const preco = parseFloat(
-        document.getElementById('iPreco').value
-    );
+  const preco =
+    parseFloat(document.getElementById('iPreco').value);
 
-    if(!nome || isNaN(qtd) || isNaN(preco)) {
+  if(!nome || isNaN(qtd) || isNaN(preco)) {
 
-        alert("Preencha corretamente");
+    alert("Preencha corretamente");
 
-        return;
-    }
+    return;
+  }
 
-    estoque.push({
+  estoque.push({
 
-        id: Date.now(),
+    id: Date.now(),
 
-        nome,
+    nome,
 
-        qtd,
+    qtd,
 
-        unidade: unid,
+    unidade: unid,
 
-        preco
+    preco
 
-    });
+  });
 
-    set(ref(db, 'estoque_camisetas'), estoque);
+  set(ref(db, 'estoque_camisetas'), estoque);
 
-    document.getElementById('iNome').value = "";
-    document.getElementById('iQtd').value = "";
-    document.getElementById('iPreco').value = "";
+  document.getElementById('iNome').value = "";
+  document.getElementById('iQtd').value = "";
+  document.getElementById('iUnid').value = "";
+  document.getElementById('iPreco').value = "";
 
-    renderEstoque();
+  renderEstoque();
 
-    atualizarDashboard();
+  atualizarDashboard();
 
-    const btn = event.currentTarget;
+  const btn = event.currentTarget;
 
-    btn.innerHTML = "✔ Salvo";
+  btn.innerHTML = "✔ Salvo";
 
-    setTimeout(() => {
+  setTimeout(() => {
 
-        btn.innerHTML = "Salvar Produto";
+    btn.innerHTML = "Salvar Produto";
 
-    }, 1500);
+  }, 1500);
+
 }
 
 window.renderEstoque = function() {
 
-    const corpo =
-        document.getElementById('corpo-estoque-lista');
+  const corpo =
+    document.getElementById('corpo-estoque-lista');
 
-    const select =
-        document.getElementById('produtoVenda');
+  const select =
+    document.getElementById('produtoVenda');
 
-    if(estoque.length === 0) {
+  if(estoque.length === 0) {
 
-        corpo.innerHTML = `
-        <tr>
+    corpo.innerHTML = `
+      <tr>
         <td colspan="4">
-        Sem produtos
+          Sem produtos
         </td>
-        </tr>
-        `;
+      </tr>
+    `;
 
-        return;
-    }
+    return;
+  }
 
-    corpo.innerHTML = estoque.map(i => `
+  corpo.innerHTML = estoque.map(i => `
 
     <tr>
 
-    <td>${i.nome}</td>
+      <td>${i.nome}</td>
 
-    <td>
-    ${i.qtd} ${i.unidade}
-    </td>
+      <td>
+        ${i.qtd} ${i.unidade}
+      </td>
 
-    <td>
-    R$ ${Number(i.preco).toFixed(2)}
-    </td>
+      <td>
+        R$ ${Number(i.preco).toFixed(2)}
+      </td>
 
-    <td>
+      <td>
 
-    <button class="btn-mini btn-sub"
-    onclick="ajustarQtd(${i.id}, -1)">
-    -
-    </button>
+        <button class="btn-mini btn-sub"
+        onclick="ajustarQtd(${i.id}, -1)">
+          -
+        </button>
 
-    <button class="btn-mini btn-add"
-    onclick="ajustarQtd(${i.id}, 1)">
-    +
-    </button>
+        <button class="btn-mini btn-add"
+        onclick="ajustarQtd(${i.id}, 1)">
+          +
+        </button>
 
-    <button class="btn-mini btn-del"
-    onclick="removerProduto(${i.id})">
-    🗑
-    </button>
+        <button class="btn-mini btn-del"
+        onclick="removerProduto(${i.id})">
+          🗑
+        </button>
 
-    </td>
+      </td>
 
     </tr>
 
-    `).join('');
+  `).join('');
 
-    select.innerHTML = estoque.map(i => `
+  select.innerHTML = estoque.map(i => `
 
     <option value="${i.id}">
-
-    ${i.nome}
-    (R$ ${i.preco})
-
+      ${i.nome} (R$ ${i.preco})
     </option>
 
-    `).join('');
+  `).join('');
+
 }
 
 window.ajustarQtd = function(id, delta) {
 
-    const item =
-        estoque.find(i => i.id === id);
+  const item =
+    estoque.find(i => i.id === id);
 
-    if(!item) return;
+  if(!item) return;
 
-    item.qtd += delta;
+  item.qtd += delta;
 
-    if(item.qtd < 0)
-        item.qtd = 0;
+  if(item.qtd < 0) {
+    item.qtd = 0;
+  }
 
-    set(ref(db, 'estoque_camisetas'), estoque);
+  set(ref(db, 'estoque_camisetas'), estoque);
 
-    renderEstoque();
+  renderEstoque();
 
-    atualizarDashboard();
+  atualizarDashboard();
+
 }
 
 window.removerProduto = function(id) {
 
-    if(!confirm("Excluir produto?"))
-        return;
+  if(!confirm("Excluir produto?")) return;
 
-    estoque =
-        estoque.filter(i => i.id !== id);
+  estoque =
+    estoque.filter(i => i.id !== id);
 
-    set(ref(db, 'estoque_camisetas'), estoque);
+  set(ref(db, 'estoque_camisetas'), estoque);
 
-    renderEstoque();
+  renderEstoque();
 
-    atualizarDashboard();
+  atualizarDashboard();
+
 }
 
 window.realizarVenda = function() {
 
-    const id =
-        document.getElementById('produtoVenda').value;
+  const id =
+    document.getElementById('produtoVenda').value;
 
-    const qtd =
-        parseInt(
-            document.getElementById('qtdVenda').value
-        );
+  const qtd =
+    parseInt(document.getElementById('qtdVenda').value);
 
-    const item =
-        estoque.find(i => i.id == id);
+  const item =
+    estoque.find(i => i.id == id);
 
-    if(!item) return;
+  if(!item) return;
 
-    if(isNaN(qtd) || qtd <= 0) {
+  if(isNaN(qtd) || qtd <= 0) {
 
-        alert("Digite a quantidade");
+    alert("Digite a quantidade");
 
-        return;
-    }
+    return;
+  }
 
-    if(item.qtd < qtd) {
+  if(item.qtd < qtd) {
 
-        alert("Estoque insuficiente");
+    alert("Estoque insuficiente");
 
-        return;
-    }
+    return;
+  }
 
-    item.qtd -= qtd;
+  item.qtd -= qtd;
 
-    const total =
-        qtd * item.preco;
+  const total = qtd * item.preco;
 
-    set(ref(db, 'estoque_camisetas'), estoque);
+  set(ref(db, 'estoque_camisetas'), estoque);
 
-    push(ref(db, 'vendas'), {
+  push(ref(db, 'vendas'), {
 
-        produto: item.nome,
+    produto: item.nome,
 
-        quantidade: qtd,
+    quantidade: qtd,
 
-        valor: total,
+    valor: total,
 
-        data: new Date().toISOString()
+    data: new Date().toISOString()
 
-    });
+  });
 
-    document.getElementById('totalVenda')
-        .innerHTML = `
-        ✅ Venda realizada
-        <br>
-        Total:
-        R$ ${total.toFixed(2)}
-        `;
+  document.getElementById('totalVenda')
+    .innerHTML = `
+      ✅ Venda realizada
+      <br>
+      Total: R$ ${total.toFixed(2)}
+    `;
 
-    renderEstoque();
+  document.getElementById('qtdVenda').value = "";
 
-    atualizarDashboard();
+  renderEstoque();
+
+  atualizarDashboard();
+
 }
 
 window.atualizarDashboard = function() {
 
-    document.getElementById('dTotal')
-        .innerText = estoque.length;
+  document.getElementById('dTotal')
+    .innerText = estoque.length;
 
-    const baixo =
-        estoque.filter(i => i.qtd <= 5);
+  const baixo =
+    estoque.filter(i => i.qtd <= 5);
 
-    document.getElementById('dBaixo')
-        .innerText = baixo.length;
+  document.getElementById('dBaixo')
+    .innerText = baixo.length;
 
-    const valor =
-        estoque.reduce((acc, i) => {
+  const valor =
+    estoque.reduce((acc, i) => {
 
-        return acc + (i.qtd * i.preco);
+      return acc + (i.qtd * i.preco);
 
     }, 0);
 
-    document.getElementById('dValor')
-        .innerText =
-        "R$ " + valor.toFixed(2);
+  document.getElementById('dValor')
+    .innerText = "R$ " + valor.toFixed(2);
 
-    const area =
-        document.getElementById('lista-criticos');
+  const area =
+    document.getElementById('lista-criticos');
 
-    if(baixo.length === 0) {
+  if(baixo.length === 0) {
 
-        area.innerHTML =
-            "✅ Estoque OK";
+    area.innerHTML = "✅ Estoque OK";
 
-        return;
-    }
+    return;
+  }
 
-    area.innerHTML =
-        baixo.map(i => `
+  area.innerHTML =
+    baixo.map(i => `
 
-        <div style="
+      <div style="
         background:#ffe6e6;
         padding:10px;
         margin-bottom:10px;
         border-radius:8px;
-        ">
+      ">
 
-        ⚠ ${i.nome}
-        (${i.qtd})
+        ⚠ ${i.nome} (${i.qtd})
 
-        </div>
+      </div>
 
-        `).join('');
+    `).join('');
+
 }
 
 window.onload = inicializar;
