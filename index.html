@@ -554,7 +554,17 @@ Total Vendido
 </h2>
 
 <select id="orcProduto"></select>
+<input type="text"
+id="orcCliente"
+placeholder="Nome do Cliente">
 
+<input type="tel"
+id="orcTelefone"
+placeholder="Telefone">
+
+<input type="text"
+id="orcEndereco"
+placeholder="Endereço">
 <input type="number"
 id="orcQtd"
 placeholder="Quantidade">
@@ -1161,7 +1171,14 @@ document.getElementById('overlay')
 let textoWhatsapp = "";
 
 window.gerarOrcamento = function() {
+const cliente =
+document.getElementById('orcCliente').value;
 
+const telefone =
+document.getElementById('orcTelefone').value;
+
+const endereco =
+document.getElementById('orcEndereco').value;
     const id =
     document.getElementById('orcProduto').value;
 
@@ -1208,7 +1225,14 @@ window.gerarOrcamento = function() {
     document.getElementById(
     'resultadoOrcamento'
     ).innerHTML = `
+<p><b>Cliente:</b>
+${cliente}</p>
 
+<p><b>Telefone:</b>
+${telefone}</p>
+
+<p><b>Endereço:</b>
+${endereco}</p>
     <h3 style="margin-bottom:10px;">
     📄 ORÇAMENTO
     </h3>
@@ -1234,9 +1258,15 @@ window.gerarOrcamento = function() {
 
     `;
 
-    textoWhatsapp = `
+   textoWhatsapp = `
 
 📄 *ORÇAMENTO NOXARTE*
+
+👤 Cliente: ${cliente}
+
+📞 Telefone: ${telefone}
+
+📍 Endereço: ${endereco}
 
 👕 Produto: ${item.nome}
 
@@ -1252,6 +1282,8 @@ R$ ${total.toFixed(2)}
 
 Obrigado pelo contato 🤝
 NOXARTE
+
+`;
 
 `;
 
