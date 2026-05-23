@@ -40,7 +40,18 @@
     transition: width 0.3s ease;
 }
 
-#splash-screen img {
+#splash-screen{
+    position:fixed;
+    inset:0;
+    background:#14202b;
+    z-index:99999;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+       #splash-screen img {
     width: 120px;
     height: 120px;
     border-radius: 50%;
@@ -759,40 +770,9 @@
         }, 500);
     }
 
-    // 🔥 ESTOQUE EXTRA
-    db.ref('estoque_extra').on('value')
-        .then(snap => {
-            estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
-            passoConcluido();
-        })
-        .catch(() => passoConcluido());
+ 
 
-    // 🔥 LANCHE
-    db.ref('estoque_lanche').on('value')
-        .then(snap => {
-            estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
-            passoConcluido();
-        })
-        .catch(() => passoConcluido());
-
-    // 🔥 EQUIPE
-    db.ref('equipe').on('value')
-        .then(snap => {
-            equipe = snap.val() ? Object.values(snap.val()) : [];
-            renderLogin();
-            renderListaEquipe();
-            passoConcluido();
-        })
-        .catch(() => passoConcluido());
-
-    // 🔥 ESTOQUE PRINCIPAL
-    db.ref('estoque_app').on('value')
-        .then(snap => {
-            estoque = snap.val() ? Object.values(snap.val()) : [];
-            passoConcluido();
-        })
-        .catch(() => passoConcluido());
-}
+   
 function calcularTotal() {
     const totalPizza = estoque.reduce((acc, i) => acc + i.qtd, 0);
     const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
@@ -808,6 +788,33 @@ function calcularTotal() {
     `;
 
     area.innerHTML = html;
+}
+   function renderEstoqueExtra() {
+
+    const corpo = document.getElementById('corpo-extra');
+
+    if(!corpo) return;
+
+    if(estoqueExtra.length === 0){
+        corpo.innerHTML = `
+            <tr>
+                <td colspan="3">Sem itens</td>
+            </tr>
+        `;
+        return;
+    }
+
+    corpo.innerHTML = estoqueExtra.map(i => `
+        <tr>
+            <td>${i.nome}</td>
+            <td>${i.qtd} ${i.unidade}</td>
+            <td>
+                <button onclick="removerGeral(${i.id}, 'extra')">
+                    🗑
+                </button>
+            </td>
+        </tr>
+    `).join('');
 }
    function salvarExtra(event) {
     const n = document.getElementById('eNome').value.trim();
