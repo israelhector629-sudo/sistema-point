@@ -417,7 +417,16 @@ onclick="abrirCard('relatorio', this)">
 
 <input type="number" id="iPreco" placeholder="Preço da peça">
 <input type="number" id="iCusto" placeholder="Custo da peça">
-<button class="btn-acao"
+<select id="iEstampa">
+
+<option value="">Tipo de Estampa</option>
+
+<option value="DTF">DTF</option>
+
+<option value="SUBLIMAÇÃO">SUBLIMAÇÃO</option>
+
+</select>
+   <button class="btn-acao"
 style="background:var(--primary);"
 onclick="salvarItem(event)">
 
@@ -433,7 +442,9 @@ Salvar Produto
 <tr>
 <th>Produto</th>
 <th>Qtd</th>
+
 <th>Preço</th>
+<th>Estampa</th>
 <th>Ações</th>
 </tr>
 </thead>
@@ -513,6 +524,7 @@ Total Vendido
 <thead>
 <tr>
 <th>Produto</th>
+<th>Estampa</th>
 <th>Qtd</th>
 <th>Venda</th>
 <th>Lucro</th>
@@ -690,8 +702,10 @@ window.salvarItem = function(event) {
     parseFloat(document.getElementById('iPreco').value);
 const custo = parseFloat(
 document.getElementById('iCusto').value
+   const estampa =
+document.getElementById('iEstampa').value;
 );
-if(!nome || isNaN(qtd) || isNaN(preco) || isNaN(custo)) {
+if(!nome || isNaN(qtd) || isNaN(preco) || isNaN(custo) || !estampa) {
 
     alert("Preencha corretamente");
 
@@ -708,8 +722,9 @@ if(!nome || isNaN(qtd) || isNaN(preco) || isNaN(custo)) {
 
     unidade: unid,
 
-    preco,
-custo
+   preco,
+custo,
+estampa
 
 
   });
@@ -721,6 +736,7 @@ custo
   document.getElementById('iUnid').value = "";
   document.getElementById('iPreco').value = "";
    document.getElementById('iCusto').value = "";
+   document.getElementById('iEstampa').value = "";
 
   renderEstoque();
 
@@ -772,7 +788,11 @@ window.renderEstoque = function() {
       <td>
         R$ ${Number(i.preco).toFixed(2)}
       </td>
+<td>
 
+${i.estampa}
+
+</td>
       <td>
 
         <button class="btn-mini btn-sub"
@@ -882,6 +902,7 @@ total - gasto;
   push(ref(db, 'vendas'), {
 
 produto: item.nome,
+     estampa: item.estampa,
 
 quantidade: qtd,
 
@@ -1006,7 +1027,11 @@ window.atualizarRelatorio = function() {
 
         <tr>
 
-            <td>${v.produto}</td>
+           <td>${v.produto}</td>
+
+<td>
+${v.estampa || '-'}
+</td>
 
             <td>${v.quantidade}</td>
 
