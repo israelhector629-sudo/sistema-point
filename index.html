@@ -1155,51 +1155,8 @@ document.getElementById('overlay')
 .classList.toggle('active');
 
 }
-   window.addEventListener('load', () => {
-
-let progress = 0;
-
-const barra =
-document.getElementById('progress');
-
-const intervalo = setInterval(() => {
-
-progress += 10;
-
-barra.style.width = progress + '%';
-
-if(progress >= 100){
-
-clearInterval(intervalo);
-
-// some splash
-setTimeout(() => {
-
-document.getElementById('splash-screen')
-.style.animation =
-'fadeOut 0.6s forwards';
-
-// abre login
-document.getElementById('login-screen')
-.style.display = 'flex';
-
-}, 400);
-
-}
-
-}, 120);
-
-});
-   // LOGIN AUTOMÁTICO
-setTimeout(() => {
-
-document.getElementById('login-screen')
-.style.display = 'none';
-
-document.getElementById('app-container')
-.style.display = 'flex';
-
-}, 2500);
+  
+ 
 let textoWhatsapp = "";
 
 window.gerarOrcamento = function() {
