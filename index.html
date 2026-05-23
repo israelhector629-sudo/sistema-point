@@ -330,7 +330,7 @@
         }
     </style>
 </head>
-<body onload="inicializar()">
+<body>
 <div id="splash-screen">
     <img src="logo.png" alt="Logo">
     <h1>FLUXO DE CAIXA</h1>
@@ -591,11 +591,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
+  apiKey: "AIzaSyCKHlgr5xT0jQgqHT3i6nc-xTN7xFNcyqw",
   authDomain: "noxarte-caixa.firebaseapp.com",
   databaseURL: "https://noxarte-caixa-default-rtdb.firebaseio.com",
   projectId: "noxarte-caixa",
-  storageBucket: "noxarte-caixa.appspot.com",
+  storageBucket: "noxarte-caixa.firebasestorage.app",
   messagingSenderId: "664643333716",
   appId: "1:664643333716:web:4ead3af8eafaac8cb3c7c1"
 };
@@ -702,9 +702,10 @@ window.salvarItem = function(event) {
     parseFloat(document.getElementById('iPreco').value);
 const custo = parseFloat(
 document.getElementById('iCusto').value
-   const estampa =
-document.getElementById('iEstampa').value;
 );
+
+const estampa =
+document.getElementById('iEstampa').value;
 if(!nome || isNaN(qtd) || isNaN(preco) || isNaN(custo) || !estampa) {
 
     alert("Preencha corretamente");
