@@ -360,1036 +360,427 @@
         </div>
 
       
-       <div class="app-body">
-            <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-            <div class="sidebar" id="sidebar">
-                <div class="user-info" id="user-info"></div>
-                <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
-             
-       <button class="menu-btn active" onclick="tab('inicio', this)">
-    <i class="fas fa-home"></i> Dashboard
+       <!-- ========================= -->
+<!-- CARD PRODUTOS -->
+<!-- ========================= -->
+
+<div class="card" id="produtos">
+
+<h2 style="margin-bottom:15px;">👕 Cadastro de Produtos</h2>
+
+<input type="text" id="iNome" placeholder="Nome da camiseta/produto">
+
+<input type="number" id="iQtd" placeholder="Quantidade">
+
+<input type="text" id="iUnid" placeholder="Unidade (un, pct, mt...)">
+
+<input type="number" id="iPreco" placeholder="Preço da peça">
+
+<button class="btn-acao"
+style="background:var(--primary);"
+onclick="salvarItem(event)">
+
+Salvar Produto
+
 </button>
 
-<button class="menu-btn" onclick="tab('produtos', this)">
-    <i class="fas fa-shirt"></i> Produtos
+<div class="table-res">
+
+<table>
+
+<thead>
+<tr>
+<th>Produto</th>
+<th>Qtd</th>
+<th>Preço</th>
+<th>Ações</th>
+</tr>
+</thead>
+
+<tbody id="corpo-estoque-lista"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- CARD FRENTE DE CAIXA -->
+<!-- ========================= -->
+
+<div class="card" id="caixa">
+
+<h2 style="margin-bottom:15px;">🛒 Frente de Caixa</h2>
+
+<select id="produtoVenda"></select>
+
+<input type="number" id="qtdVenda" placeholder="Quantidade">
+
+<button class="btn-acao"
+style="background:#27ae60;"
+onclick="realizarVenda()">
+
+Finalizar Venda
+
 </button>
 
-<button class="menu-btn" onclick="tab('caixa', this)">
-    <i class="fas fa-cash-register"></i> Frente de Caixa
-</button>
+<div id="totalVenda"
+style="
+margin-top:15px;
+font-size:20px;
+font-weight:bold;
+color:#27ae60;
+"></div>
 
-<button class="menu-btn" onclick="tab('financeiro', this)">
-    <i class="fas fa-dollar-sign"></i> Fluxo de Caixa
-</button>
+</div>
 
-<button class="menu-btn" onclick="tab('config', this)">
-    <i class="fas fa-users"></i> Equipe
-</button>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
-      authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
-      databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
-      projectId: "point-da-pizza-fc5d6",
-      storageBucket: "point-da-pizza-fc5d6.appspot.com",
-      messagingSenderId: "658125716246",
-      appId: "1:658125716246:web:ca129202695923984579d4ba"
-    };
+<!-- ========================= -->
+<!-- DASHBOARD -->
+<!-- ========================= -->
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-   let estoqueLanche = [];
-    let estoque = []; let equipe = [];
-    let idLogado = null; let nomeLogado = "";
-    let estoqueExtra = [];
- function atualizarDashboard() {
+<div class="card active" id="inicio">
 
-    const totalItens = estoque.length + estoqueLanche.length;
+<h2 style="margin-bottom:20px;">📊 Dashboard</h2>
 
-    const baixo = [
-        ...estoque.filter(i => i.qtd <= 5),
-        ...estoqueLanche.filter(i => i.qtd <= 5)
-    ];
+<div style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+">
 
-    document.getElementById('dTotal').innerText = totalItens;
-    document.getElementById('dBaixo').innerText = baixo.length;
-    document.getElementById('dPizza').innerText = estoque.length;
-    document.getElementById('dLanche').innerText = estoqueLanche.length;
+<div class="card-box">
+Produtos
+<br>
+<span id="dTotal">0</span>
+</div>
 
-    const lista = document.getElementById('lista-criticos');
+<div class="card-box">
+Baixo Estoque
+<br>
+<span id="dBaixo">0</span>
+</div>
 
-    if(baixo.length === 0){
-        lista.innerHTML = "✅ Tudo ok";
+<div class="card-box">
+Valor Estoque
+<br>
+<span id="dValor">0</span>
+</div>
+
+</div>
+
+<div id="lista-criticos"
+style="margin-top:20px;"></div>
+
+</div>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "SUA_KEY",
+  authDomain: "SEU_APP.firebaseapp.com",
+  databaseURL: "https://SEU_APP-default-rtdb.firebaseio.com",
+  projectId: "SEU_APP",
+  storageBucket: "SEU_APP.appspot.com",
+  messagingSenderId: "123456",
+  appId: "123456"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+let estoque = [];
+
+function inicializar() {
+
+    db.ref('estoque_camisetas').on('value', snap => {
+
+        estoque = snap.val()
+            ? Object.values(snap.val())
+            : [];
+
+        renderEstoque();
+
+        atualizarDashboard();
+    });
+}
+
+function salvarItem(event) {
+
+    const nome = document.getElementById('iNome').value.trim();
+
+    const qtd = parseInt(
+        document.getElementById('iQtd').value
+    );
+
+    const unid = document.getElementById('iUnid').value;
+
+    const preco = parseFloat(
+        document.getElementById('iPreco').value
+    );
+
+    if(!nome || isNaN(qtd) || isNaN(preco)) {
+
+        alert("Preencha corretamente");
+
         return;
     }
 
-    lista.innerHTML = baixo.map(i => `
-        <div style="
-            background:#ffe6e6;
-            padding:10px;
-            border-radius:8px;
-            margin-bottom:5px;
-        ">
-            ⚠️ ${i.nome} (${i.qtd})
-        </div>
-    `).join('');
-}
-   function salvarGeral(event) {
+    estoque.push({
 
-    const n = document.getElementById('gNome').value.trim();
-    const q = parseFloat(document.getElementById('gQtd').value);
-    const u = document.getElementById('gUnid').value;
-    const tipo = document.getElementById('gTipo').value;
-
-    if(!n || isNaN(q)) return alert("Preencha corretamente!");
-
-    const item = {
         id: Date.now(),
-        nome: n,
-        qtd: q,
-        unidade: u
-    };
 
-    if(tipo === "pizza") {
-        estoque.push(item);
-        db.ref('estoque_app').set(estoque);
-    }
+        nome,
 
-    if(tipo === "lanche") {
-        estoqueLanche.push(item);
-        db.ref('estoque_lanche').set(estoqueLanche);
-    }
+        qtd,
 
-    if(tipo === "extra") {
-        estoqueExtra.push(item);
-        db.ref('estoque_extra').set(estoqueExtra);
-    }
+        unidade: unid,
 
-    renderEstoque();
-    renderEstoqueLanche();
-    renderEstoqueExtra();
-    renderEstoqueGeral();
-      atualizarDashboard();
+        preco
 
-    document.getElementById('gNome').value = "";
-    document.getElementById('gQtd').value = "";
-}
-   function renderEstoqueGeral() {
-
-    const corpo = document.getElementById('corpo-geral');
-
-    const lista = [
-        ...estoque.map(i => ({...i, tipo: "pizza"})),
-        ...estoqueLanche.map(i => ({...i, tipo: "lanche"})),
-        ...estoqueExtra.map(i => ({...i, tipo: "extra"}))
-    ];
-
-    if(lista.length === 0) {
-        corpo.innerHTML = `<tr><td colspan="4" style="text-align:center;">Sem itens</td></tr>`;
-        return;
-    }
-
-    corpo.innerHTML = lista.map(i => `
-        <tr>
-            <td>${i.nome}</td>
-            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
-                ${i.qtd} ${i.unidade}
-            </td>
-            <td>${i.tipo}</td>
-            <td>
-                <button class="btn-mini btn-del" onclick="removerGeral(${i.id}, '${i.tipo}')">
-                    🗑
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-   function removerGeral(id, tipo) {
-
-    if(!confirm("Excluir item?")) return;
-
-    if(tipo === "pizza") {
-        estoque = estoque.filter(i => i.id !== id);
-        db.ref('estoque_app').set(estoque);
-    }
-
-    if(tipo === "lanche") {
-        estoqueLanche = estoqueLanche.filter(i => i.id !== id);
-        db.ref('estoque_lanche').set(estoqueLanche);
-    }
-
-    if(tipo === "extra") {
-        estoqueExtra = estoqueExtra.filter(i => i.id !== id);
-        db.ref('estoque_extra').set(estoqueExtra);
-    }
-
-    // 🔥 FALTAVA ISSO
-    renderEstoque();
-    renderEstoqueLanche();
-    renderEstoqueGeral();
-    atualizarDashboard();
-}
-  function inicializar() {
-
-    db.ref('estoque_app').on('value', snap => {
-        estoque = snap.val() ? Object.values(snap.val()) : [];
-        renderEstoque();
-        renderEstoqueGeral();
-        atualizarDashboard();
     });
 
-    db.ref('estoque_lanche').on('value', snap => {
-        estoqueLanche = snap.val() ? Object.values(snap.val()) : [];
-        renderEstoqueLanche();
-        renderEstoqueGeral();
-        atualizarDashboard();
-    });
-
-    db.ref('estoque_extra').on('value', snap => {
-        estoqueExtra = snap.val() ? Object.values(snap.val()) : [];
-        renderEstoqueExtra();
-        renderEstoqueGeral();
-        atualizarDashboard();
-    });
-
-    db.ref('equipe').on('value', snap => {
-        equipe = snap.val() ? Object.values(snap.val()) : [];
-        renderLogin();
-        renderListaEquipe();
-    });
-
-    // 🔥 some splash depois de 1.5s independente de tudo
-    setTimeout(() => {
-        document.getElementById("splash-screen").style.display = "none";
-    }, 1500);
-}
-    function finalizarCarregamento() {
-        renderEstoque();
-        renderEstoqueLanche();
-        renderEstoqueGeral();
-       atualizarDashboard();
-
-        setTimeout(() => {
-            document.getElementById("splash-screen").style.display = "none";
-        }, 500);
-    }
-
- 
-
-   
-function calcularTotal() {
-    const totalPizza = estoque.reduce((acc, i) => acc + i.qtd, 0);
-    const totalLanche = estoqueLanche.reduce((acc, i) => acc + i.qtd, 0);
-
-    const area = document.getElementById('area-alertas');
-
-    if (!area) return;
-
-    let html = `
-        📊 <b>Resumo:</b><br>
-        🍕 Pizza: ${totalPizza}<br>
-        🍔 Lanche: ${totalLanche}
-    `;
-
-    area.innerHTML = html;
-}
-   function renderEstoqueExtra() {
-
-    const corpo = document.getElementById('corpo-extra');
-
-    if(!corpo) return;
-
-    if(estoqueExtra.length === 0){
-        corpo.innerHTML = `
-            <tr>
-                <td colspan="3">Sem itens</td>
-            </tr>
-        `;
-        return;
-    }
-
-    corpo.innerHTML = estoqueExtra.map(i => `
-        <tr>
-            <td>${i.nome}</td>
-            <td>${i.qtd} ${i.unidade}</td>
-            <td>
-                <button onclick="removerGeral(${i.id}, 'extra')">
-                    🗑
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-   function salvarExtra(event) {
-    const n = document.getElementById('eNome').value.trim();
-    const q = parseFloat(document.getElementById('eQtd').value);
-    const u = document.getElementById('eUnid').value;
-
-    if(!n || isNaN(q)) return alert("Preencha corretamente!");
-
-    const existente = estoqueExtra.find(i => i.nome.toLowerCase() === n.toLowerCase());
-
-    if(existente) {
-        existente.qtd += q;
-    } else {
-        estoqueExtra.push({
-            id: Date.now(),
-            nome: n,
-            qtd: q,
-            unidade: u
-        });
-    }
-
-    db.ref('estoque_extra').set(estoqueExtra);
-
-    renderEstoqueExtra();
-    renderEstoqueGeral();
-      atualizarDashboard();
-
-    document.getElementById('eNome').value = "";
-    document.getElementById('eQtd').value = "";
-}
- 
-    function imprimirEstoqueGeral() {
-
-    let conteudo = `
-    <html>
-    <head>
-        <style>
-            body {
-                font-family: monospace;
-                width: 310px;
-                font-size: 20px;
-            }
-           .numero {
-    font-size: 26px;
-    font-weight: bold;
-}
-            .center { text-align: center; }
-            .linha {
-                border-top: 2px dashed #000;
-                margin: 10px 0;
-            }
-            .titulo {
-                font-weight: bold;
-                margin-top: 10px;
-            }
-            .baixo { color: #e67e22; font-weight: bold; }
-            .critico { color: red; font-weight: bold; }
-        </style>
-    </head>
-    <body>
-
-    <div class="center">
-        <b>RESTAURANTE</b><br>
-        ESTOQUE GERAL
-    </div>
-
-    <div class="linha"></div>
-
-    Responsável: ${nomeLogado}<br>
-    Data: ${new Date().toLocaleString()}
-
-    <div class="linha"></div>
-
-    <div class="titulo">🍕 PIZZA</div>
-    `;
-
-    // PIZZA
-    if (estoque.length === 0) {
-        conteudo += `Sem itens<br>`;
-    } else {
-      [...estoque]
-.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
-.forEach(i => {
-    let classe = "";
-
-    if (i.qtd <= 2) classe = "critico";
-    else if (i.qtd <= 5) classe = "baixo";
-
-   conteudo += `<div class="${classe}">
-    - ${i.nome}: <span class="numero">${i.qtd}</span> ${i.unidade || ''}
-</div>`;
-});
-    }
-
-    conteudo += `<div class="linha"></div>`;
-
-    // LANCHE
-    conteudo += `<div class="titulo">🍔 LANCHE</div>`;
-
-    if (estoqueLanche.length === 0) {
-        conteudo += `Sem itens<br>`;
-    } else {
-     [...estoqueLanche]
-.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
-.forEach(i => {
-    let classe = "";
-
-    if (i.qtd <= 2) classe = "critico";
-    else if (i.qtd <= 5) classe = "baixo";
-
-    conteudo += `<div class="${classe}">
-    - ${i.nome}: <span class="numero">${i.qtd}</span> ${i.unidade || ''}
-</div>`;
-});
-    }
-
-    conteudo += `
-    <div class="linha"></div>
-
-    <div class="center">
-        *** FIM DO ESTOQUE ***
-    </div>
-
-    </body>
-    </html>
-    `;
-
-    const win = window.open('', '', 'width=320,height=600');
-    win.document.write(conteudo);
-    win.document.close();
-
-    win.focus();
-    win.print();
-}
-    function imprimirRelatorio() {
-
-    const faltasPizza = estoque.filter(i => i.qtd <= 5);
-    const criticoPizza = estoque.filter(i => i.qtd <= 2);
-
-    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
-    const criticoLanche = estoqueLanche.filter(i => i.qtd <= 2);
-
-    let conteudo = `
-    <html>
-    <head>
-        <style>
-            body {
-                font-family: monospace;
-                width: 310px;
-                font-size: 22px;
-            }
-           .numero {
-    font-size: 26px;
-    font-weight: bold;
-}
-            .center { text-align: center; }
-            .linha {
-                border-top: 3px dashed #000;
-                margin: 10px 0;
-            }
-            .titulo {
-                font-weight: bold;
-                font-size: 24px;
-                margin-top: 10px;
-            }
-            .critico { color: red; font-weight: bold; }
-            .baixo { color: #e67e22; font-weight: bold; }
-            .ok { color: green; font-weight: bold; }
-        </style>
-    </head>
-    <body>
-
-        <div class="center">
-            <b>RESTAURANTE</b><br>
-            ----------------------
-        </div>
-
-        Responsável: ${nomeLogado}<br>
-        Data: ${new Date().toLocaleString()}
-
-        <div class="linha"></div>
-
-        <div class="titulo">🍕 SETOR PIZZA</div>
-    `;
-
-    // PIZZA
-    if (criticoPizza.length > 0) {
-        conteudo += `<div class="critico">CRÍTICO:</div>`;
-        criticoPizza.forEach(i => {
-            conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
-        });
-    }
-
-    if (faltasPizza.length > 0) {
-        conteudo += `<div class="baixo">BAIXO:</div>`;
-        faltasPizza
-            .filter(i => i.qtd > 2)
-            .forEach(i => {
-                conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
-            });
-    }
-
-    if (faltasPizza.length === 0) {
-        conteudo += `<div class="ok">ESTOQUE OK</div>`;
-    }
-
-    conteudo += `<div class="linha"></div>`;
-
-    // LANCHE
-    conteudo += `<div class="titulo">🍔 SETOR LANCHE</div>`;
-
-    if (criticoLanche.length > 0) {
-        conteudo += `<div class="critico">CRÍTICO:</div>`;
-        criticoLanche.forEach(i => {
-            conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
-        });
-    }
-
-    if (faltasLanche.length > 0) {
-        conteudo += `<div class="baixo">BAIXO:</div>`;
-        faltasLanche
-            .filter(i => i.qtd > 2)
-            .forEach(i => {
-                conteudo += `- ${i.nome} (${i.qtd} ${i.unidade})<br>`;
-            });
-    }
-
-    if (faltasLanche.length === 0) {
-        conteudo += `<div class="ok">ESTOQUE OK</div>`;
-    }
-
-    conteudo += `
-        <div class="linha"></div>
-
-        <div class="center">
-            *** FIM DO RELATÓRIO ***
-        </div>
-
-    </body>
-    </html>
-    `;
-
-    const win = window.open('', '', 'width=320,height=600');
-    win.document.write(conteudo);
-    win.document.close();
-
-    win.focus();
-    win.print();
-}
-   function renderLogin() {
-    document.getElementById('login-grid').innerHTML = equipe.map(f => `
-        <div class="login-card" onclick="entrar(${f.id})">
-            <img src="${f.foto || 'img/user.png'}" 
-                 onerror="this.src='img/user.png'">
-            
-            <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">
-                ${f.nome}
-            </div>
-
-            <span>${f.cargo}</span>
-        </div>
-    `).join('');
-}
-function removerLanche(id) {
-    if(confirm("Excluir item?")) {
-        estoqueLanche = estoqueLanche.filter(i => i.id !== id);
-  db.ref('estoque_lanche').set(estoqueLanche);
-    }
-}
-function mostrarRelatorioSemanal(pizza, lanche) {
-
-    let html = `
-    <html>
-    <head>
-        <style>
-            body {
-                font-family: monospace;
-                width: 310px;
-                font-size: 20px;
-            }
-            .center { text-align: center; }
-            .linha {
-                border-top: 2px dashed #000;
-                margin: 10px 0;
-            }
-            .titulo {
-                font-weight: bold;
-                margin-top: 10px;
-            }
-        </style>
-    </head>
-    <body>
-
-    <div class="center">
-        <b>RESTAURANTE</b><br>
-        FECHAMENTO SEMANAL
-    </div>
-
-    <div class="linha"></div>
-
-    Responsável: ${nomeLogado}<br>
-    Data: ${new Date().toLocaleString()}
-
-    <div class="linha"></div>
-
-    <div class="titulo">🍕 PIZZA</div>
-    `;
-
-    for(let i in pizza){
-        html += `- ${i}: ${pizza[i]}<br>`;
-    }
-
-    html += `<div class="linha"></div>`;
-    html += `<div class="titulo">🍔 LANCHE</div>`;
-
-    for(let i in lanche){
-        html += `- ${i}: ${lanche[i]}<br>`;
-    }
-
-    html += `
-    <div class="linha"></div>
-
-    <div class="center">
-        *** FIM ***
-    </div>
-
-    </body>
-    </html>
-    `;
-
-    const win = window.open('', '', 'width=320,height=600');
-    win.document.write(html);
-    win.document.close();
-
-    win.focus();
-    win.print();
-}
-  let progresso = 0;
-
-function atualizarBarra(valor) {
-    progresso += valor;
-    if (progresso > 100) progresso = 100;
-
-    document.getElementById("progress").style.width = progresso + "%";
-
-    if (progresso >= 100) {
-        setTimeout(() => {
-            document.getElementById("splash-screen").style.display = "none";
-        }, 500);
-    }
-}
-   function fechamentoSemanal() {
-
-    db.ref('historico').once('value', snap => {
-        const data = snap.val();
-        if(!data) return alert("Sem dados ainda");
-
-        const lista = Object.values(data);
-
-        const agora = new Date();
-        const semana = 7 * 24 * 60 * 60 * 1000;
-
-        const ultimos7dias = lista.filter(item => {
-            const d = new Date(item.data);
-            return (agora - d) <= semana;
-        });
-
-        // 🔥 separar por tipo
-        const resumoPizza = {};
-        const resumoLanche = {};
-
-        ultimos7dias.forEach(i => {
-
-            const grupo = i.tipo === "lanche" ? resumoLanche : resumoPizza;
-
-            if(!grupo[i.produto]) {
-                grupo[i.produto] = 0;
-            }
-
-            grupo[i.produto] += i.quantidade;
-        });
-
-        // 👇 É AQUI que entra
-        mostrarRelatorioSemanal(resumoPizza, resumoLanche);
-    });
-}
-    function ajustarLanche(id, delta) {
-    const item = estoqueLanche.find(i => i.id === id);
-
-    if(item) {
-        item.qtd = Math.max(0, item.qtd + delta);
-
-        // 🔥 SALVA SOMENTE SAÍDA
-        if(delta < 0) {
-            db.ref('historico').push({
-                produto: item.nome,
-                quantidade: Math.abs(delta),
-                unidade: item.unidade,
-                data: new Date().toISOString(),
-                usuario: nomeLogado,
-                tipo: "lanche"
-            });
-        }
-
-        db.ref('estoque_lanche').set(estoqueLanche);
-
-renderEstoqueLanche();  // 👈 ADICIONA
-renderEstoqueGeral(); }  // 👈 ADICIONA
-    }
-    
-    function salvarLanche(event) {
-    const n = document.getElementById('lNome').value.trim();
-    const q = parseFloat(document.getElementById('lQtd').value);
-    const u = document.getElementById('lUnid').value;
-
-    if(!n || isNaN(q)) return alert("Preencha corretamente!");
-
-    const existente = estoqueLanche.find(i => i.nome.toLowerCase() === n.toLowerCase());
-
-    if(existente) {
-        existente.qtd += q;
-    } else {
-        estoqueLanche.push({
-            id: Date.now(),
-            nome: n,
-            qtd: q,
-            unidade: u
-        });
-    }
-
-   db.ref('estoque_lanche').set(estoqueLanche);
-
-renderEstoqueLanche();
-renderEstoqueGeral();
-
-    document.getElementById('lNome').value = "";
-    document.getElementById('lQtd').value = "";
-}
-    function renderEstoqueLanche() {
-    const corpo = document.getElementById('corpo-lanche');
-
-    if(estoqueLanche.length === 0) {
-        corpo.innerHTML = `<tr><td colspan="3" style="text-align:center;">Sem itens</td></tr>`;
-        return;
-    }
-
-    corpo.innerHTML = estoqueLanche.map(i => `
-        <tr>
-            <td>${i.nome}</td>
-            <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
-                ${i.qtd} ${i.unidade}
-            
-              <td style="text-align:center;">
-                <button class="btn-mini btn-sub" onclick="ajustarLanche(${i.id}, -1)">-</button>
-                <button class="btn-mini btn-add" onclick="ajustarLanche(${i.id}, 1)">+</button>
-                <button class="btn-mini btn-del" onclick="removerLanche(${i.id})">🗑</button>
-            </td>
-        </tr>
-    `).join('');
-renderEstoqueGeral();}
-  
-    function entrar(id) {
-      const f = equipe.find(x => x.id == id);
-        const p = prompt(`Digite a senha para ${f.nome}:`);
-        
-        if(p === (f.senha || "5616")) {
-            idLogado = id; nomeLogado = f.nome;
-            const loginScreen = document.getElementById('login-screen');
-            loginScreen.style.opacity = '0';
-            loginScreen.style.visibility = 'hidden';
-            
-            setTimeout(() => {
-                loginScreen.style.display = 'none';
-                document.getElementById('app-container').style.display = 'flex';
-            }, 600);
-            
-            document.getElementById('user-info').innerHTML = `
-    <img src="https://ui-avatars.com/api/?name=${f.nome}&background=e74c3c&color=fff">
-    <h4>${f.nome}</h4>
-    <div class="badge">${f.cargo}</div>
-`;
-        }
-    }
-
-   function alertaGeral() {
-
-    const geral = [...estoque, ...estoqueLanche];
-
-    const baixos = geral.filter(i => i.qtd <= 5);
-
-    if(baixos.length > 0) {
-        alert("⚠️ Itens baixos:\n\n" + baixos.map(i => i.nome + " (" + i.qtd + ")").join("\n"));
-    }
-}
-    function renderEstoque() {
-
-    if(estoque.length === 0) {
-    document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
-    document.getElementById('corpo-estoque-lista').innerHTML = ``;
-
-    const area = document.getElementById('area-alertas');
-    if (area) area.innerHTML = "Sem itens cadastrados";
-} else {
-        document.getElementById('selProd').innerHTML = estoque.map(i =>
-            `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`
-        ).join('');
-    }
-
-    const faltasPizza = estoque.filter(i => i.qtd <= 5);
-    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
-
-    let html = "";
-
-    if (faltasPizza.length > 0) {
-        html += `🍕 Faltando:<br>${faltasPizza.map(f => `${f.nome} (${f.qtd})`).join('<br>')}`;
-    }
-
-    if (faltasLanche.length > 0) {
-        html += `<br><br>🍔 Faltando:<br>${faltasLanche.map(f => `${f.nome} (${f.qtd})`).join('<br>')}`;
-    }
-
-    if (!html) {
-        html = "✅ Estoque OK";
-    }
-
-    document.getElementById('area-alertas').innerHTML = html;
-
-    document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
-        <tr>
-            <td>${i.nome}</td>
-            <td>${i.qtd} ${i.unidade}</td>
-            <td>
-             <td style="text-align:center;">
-    <button class="btn-mini btn-sub" onclick="ajustarQtd(${i.id}, -1)">-</button>
-    <button class="btn-mini btn-add" onclick="ajustarQtd(${i.id}, 1)">+</button>
-    <button class="btn-mini btn-del" onclick="removerItemEstoque(${i.id})">🗑</button>
-</td>
-        </tr>
-    `).join('');
-
-    renderEstoqueGeral();
-}
- function ajustarQtd(id, delta) {
-    const item = estoque.find(x => x.id === id);
-    if(item) {
-        item.qtd = Math.max(0, item.qtd + delta);
-
-        db.ref('estoque_app').set(estoque);
-
-        renderEstoque();
-        renderEstoqueGeral();
-        atualizarDashboard(); // 🔥 ADICIONA ISSO
-    }
-}
-   function enviarRelatorio() {
-
-    const faltasPizza = estoque.filter(i => i.qtd <= 7);
-    const criticoPizza = estoque.filter(i => i.qtd <= 10);
-
-    const faltasLanche = estoqueLanche.filter(i => i.qtd <= 5);
-    const criticoLanche = estoqueLanche.filter(i => i.qtd <= 2);
-
-    let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\n\n`;
-    msg += `👨‍🍳 *Responsável:* ${nomeLogado}\n`;
-    msg += `📅 *Data:* ${new Date().toLocaleString()}\n\n`;
-
-    // ======================
-    // 🍕 PIZZA
-    // ======================
-    msg += `🍕 *SETOR PIZZA*\n`;
-
-    if (criticoPizza.length > 0) {
-        msg += `🚨 Crítico:\n`;
-        criticoPizza.forEach(i => {
-            msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
-        });
-    }
-
-    if (faltasPizza.length > 0) {
-        msg += `⚠️ Baixo:\n`;
-        faltasPizza
-            .filter(i => i.qtd > 2)
-            .forEach(i => {
-                msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
-            });
-    }
-
-    if (faltasPizza.length === 0) {
-        msg += `✅ Tudo OK\n`;
-    }
-
-    msg += `\n`;
-
-    // ======================
-    // 🍔 LANCHE
-    // ======================
-    msg += `🍔 *SETOR LANCHE*\n`;
-
-    if (criticoLanche.length > 0) {
-        msg += `🚨 Crítico:\n`;
-        criticoLanche.forEach(i => {
-            msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
-        });
-    }
-
-    if (faltasLanche.length > 0) {
-        msg += `⚠️ Baixo:\n`;
-        faltasLanche
-            .filter(i => i.qtd > 2)
-            .forEach(i => {
-                msg += `- ${i.nome} (${i.qtd} ${i.unidade})\n`;
-            });
-    }
-
-    if (faltasLanche.length === 0) {
-        msg += `✅ Tudo OK\n`;
-    }
-
-    msg += `\n📲 _Sistema Point da Pizza_`;
-
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
-}
-   function removerItemEstoque(id) {
-    if(confirm("Tem certeza que deseja excluir este item?")) {
-        estoque = estoque.filter(i => i.id !== id);
-
-        db.ref('estoque_app').set(estoque);
-
-        renderEstoque();
-        renderEstoqueGeral();
-    }
-}
-    function baixar(event) {
-    if(estoque.length === 0) return alert("Cadastre itens primeiro!");
-
-    const id = document.getElementById('selProd').value;
-    const q = parseFloat(document.getElementById('qSai').value);
-    const i = estoque.find(x => x.id == id);
-
-    if(i) {
-        i.qtd = Math.max(0, i.qtd - q);
-        db.ref('estoque_app').set(estoque);
-
-renderEstoque();
-renderEstoqueGeral();
-
-        // 🔥 NOVO: salvar histórico
-        const registro = {
-            produto: i.nome,
-            quantidade: q,
-            unidade: i.unidade,
-            data: new Date().toISOString(),
-            usuario: nomeLogado,
-            tipo: "pizza"
-        };
-
-        db.ref('historico').push(registro);
-
-        // efeito visual (igual você já tem)
-        const btn = event.currentTarget;
-        const textoOriginal = btn.innerHTML;
-
-        btn.innerHTML = `✔ Lançado!`;
-        btn.style.background = "#2ecc71";
-
-        setTimeout(() => {
-            btn.innerHTML = textoOriginal;
-            btn.style.background = "var(--success)";
-        }, 1500);
-
-        document.getElementById('qSai').value = 1;
-    }
-}
-    function salvarItem(event) {
-    const n = document.getElementById('iNome').value.trim();
-    const q = parseFloat(document.getElementById('iQtd').value);
-    const u = document.getElementById('iUnid').value;
-
-    if(!n || isNaN(q)) return alert("Preencha o nome e a quantidade corretamente!");
-
-    const existente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
-
-    if(existente) { 
-        existente.qtd += q; 
-    } else { 
-        estoque.push({
-            id: Date.now(),
-            nome: n,
-            qtd: q,
-            unidade: u
-        }); 
-    }
-
-   db.ref('estoque_app').set(estoque);
-
-renderEstoque();        // 👈 ADICIONA
-renderEstoqueGeral();   // 👈 ADICIONA
+    db.ref('estoque_camisetas').set(estoque);
 
     document.getElementById('iNome').value = "";
     document.getElementById('iQtd').value = "";
+    document.getElementById('iPreco').value = "";
 
-    // efeito visual
+    renderEstoque();
+
+    atualizarDashboard();
+
     const btn = event.currentTarget;
-    const textoOriginal = btn.innerHTML;
 
-    btn.innerHTML = "✔ Salvo!";
-    btn.style.background = "#2ecc71";
+    btn.innerHTML = "✔ Salvo";
 
     setTimeout(() => {
-        btn.innerHTML = textoOriginal;
-        btn.style.background = "var(--primary)";
+
+        btn.innerHTML = "Salvar Produto";
+
     }, 1500);
 }
 
-    function renderListaEquipe() {
-        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
-            <div class="list-item">
-                <div><b style="color: var(--secondary);">${f.nome}</b> <br><small style="color:#999"><i class="fas fa-tag" style="font-size: 10px;"></i> ${f.cargo}</small></div>
-                <button onclick="removerFunc(${f.id})" class="btn-del" title="Remover Membro"><i class="fas fa-user-times"></i></button>
-            </div>
+function renderEstoque() {
+
+    const corpo =
+        document.getElementById('corpo-estoque-lista');
+
+    const select =
+        document.getElementById('produtoVenda');
+
+    if(estoque.length === 0) {
+
+        corpo.innerHTML = `
+        <tr>
+        <td colspan="4">
+        Sem produtos
+        </td>
+        </tr>
+        `;
+
+        return;
+    }
+
+    corpo.innerHTML = estoque.map(i => `
+
+    <tr>
+
+    <td>${i.nome}</td>
+
+    <td>
+    ${i.qtd} ${i.unidade}
+    </td>
+
+    <td>
+    R$ ${Number(i.preco).toFixed(2)}
+    </td>
+
+    <td>
+
+    <button class="btn-mini btn-sub"
+    onclick="ajustarQtd(${i.id}, -1)">
+    -
+    </button>
+
+    <button class="btn-mini btn-add"
+    onclick="ajustarQtd(${i.id}, 1)">
+    +
+    </button>
+
+    <button class="btn-mini btn-del"
+    onclick="removerProduto(${i.id})">
+    🗑
+    </button>
+
+    </td>
+
+    </tr>
+
+    `).join('');
+
+    select.innerHTML = estoque.map(i => `
+
+    <option value="${i.id}">
+
+    ${i.nome}
+    (R$ ${i.preco})
+
+    </option>
+
+    `).join('');
+}
+
+function ajustarQtd(id, delta) {
+
+    const item =
+        estoque.find(i => i.id === id);
+
+    if(!item) return;
+
+    item.qtd += delta;
+
+    if(item.qtd < 0)
+        item.qtd = 0;
+
+    db.ref('estoque_camisetas').set(estoque);
+
+    renderEstoque();
+
+    atualizarDashboard();
+}
+
+function removerProduto(id) {
+
+    if(!confirm("Excluir produto?"))
+        return;
+
+    estoque =
+        estoque.filter(i => i.id !== id);
+
+    db.ref('estoque_camisetas').set(estoque);
+
+    renderEstoque();
+
+    atualizarDashboard();
+}
+
+function realizarVenda() {
+
+    const id =
+        document.getElementById('produtoVenda').value;
+
+    const qtd =
+        parseInt(
+            document.getElementById('qtdVenda').value
+        );
+
+    const item =
+        estoque.find(i => i.id == id);
+
+    if(!item) return;
+
+    if(isNaN(qtd) || qtd <= 0) {
+
+        alert("Digite a quantidade");
+
+        return;
+    }
+
+    if(item.qtd < qtd) {
+
+        alert("Estoque insuficiente");
+
+        return;
+    }
+
+    item.qtd -= qtd;
+
+    const total =
+        qtd * item.preco;
+
+    db.ref('estoque_camisetas')
+        .set(estoque);
+
+    db.ref('vendas').push({
+
+        produto: item.nome,
+
+        quantidade: qtd,
+
+        valor: total,
+
+        data: new Date().toISOString()
+
+    });
+
+    document.getElementById('totalVenda')
+        .innerHTML = `
+        ✅ Venda realizada
+        <br>
+        Total:
+        R$ ${total.toFixed(2)}
+        `;
+
+    renderEstoque();
+
+    atualizarDashboard();
+}
+
+function atualizarDashboard() {
+
+    document.getElementById('dTotal')
+        .innerText = estoque.length;
+
+    const baixo =
+        estoque.filter(i => i.qtd <= 5);
+
+    document.getElementById('dBaixo')
+        .innerText = baixo.length;
+
+    const valor =
+        estoque.reduce((acc, i) => {
+
+        return acc + (i.qtd * i.preco);
+
+    }, 0);
+
+    document.getElementById('dValor')
+        .innerText =
+        "R$ " + valor.toFixed(2);
+
+    const area =
+        document.getElementById('lista-criticos');
+
+    if(baixo.length === 0) {
+
+        area.innerHTML =
+            "✅ Estoque OK";
+
+        return;
+    }
+
+    area.innerHTML =
+        baixo.map(i => `
+
+        <div style="
+        background:#ffe6e6;
+        padding:10px;
+        margin-bottom:10px;
+        border-radius:8px;
+        ">
+
+        ⚠ ${i.nome}
+        (${i.qtd})
+
+        </div>
+
         `).join('');
-    }
+}
 
-    function removerFunc(id) {
-        if(id === idLogado) return alert("Você não pode remover a si mesmo enquanto estiver logado!");
-        if(confirm("Tem certeza que deseja remover este membro da equipe?")) {
-            equipe = equipe.filter(f => f.id !== id);
-            db.ref('equipe').set(equipe);
-        }
-    }
+window.onload = inicializar;
 
-    function addFunc(event) {
-        const n = document.getElementById('fNome').value.trim();
-        const s = document.getElementById('fSenha').value.trim();
-        const c = document.getElementById('fCargo').value;
-        
-        if(!n || !s) return alert("Por favor, preencha o Nome e a Senha.");
-        
-        equipe.push({id: Date.now(), nome: n, senha: s, cargo: c});
-        db.ref('equipe').set(equipe);
-        
-        document.getElementById('fNome').value = "";
-        document.getElementById('fSenha').value = "";
-        
-        const btn = event.currentTarget;
-        const textoOriginal = btn.innerHTML;
-        btn.innerHTML = `<i class="fas fa-check"></i> CADASTRADO!`;
-        btn.style.background = "var(--success)";
-        setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--secondary)"; }, 1500);
-    }
-
-    function tab(id, btn) {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
-        btn.classList.add('active');
-        if(window.innerWidth <= 768) toggleMenu();
-    }
-
-    function toggleMenu() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('active');
-    }
-
-    function checkAdmin(id, btn) {
-        const p = prompt("Digite a Senha do Patrão para acessar Configurações:");
-        if(p === "5616") tab(id, btn);
-        else if(p !== null) alert("Acesso Negado. Senha incorreta.");
-    }
-   
-  
 </script>
 </body>
 </html>
