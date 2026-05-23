@@ -4,7 +4,7 @@
    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOXARTE- estoque</title>
+    <title>Fluxo de Caixa NOXARTE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -334,13 +334,16 @@
 <body onload="inicializar()">
 <div id="splash-screen">
     <img src="logo.png" alt="Logo">
-    <h1>NOXARTE</h1>
+    <h1>FLUXO DE CAIXA</h1>
     <p>by Israel Dev</p>
+<div class="progress-bar">
+    <div id="progress"></div>
+</div>
 </div>
     <div id="login-screen">
         <div class="login-header">
             <img src="logo.png" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
-            <h2>NOXARTE</h2>
+            <h2>FLUXO DE CAIXA NOXARTE</h2>
 <p style="font-size:12px; color:#ccc;">by Israel Dev</p>
         </div>
         <div class="login-grid" id="login-grid">
@@ -351,7 +354,7 @@
         <div class="header">
             <div class="logo-top">
                 <img src="logo.png" onerror="this.src='https://via.placeholder.com/150'">
-               <span>ESTOQUE NOXARTE • by Israel Dev</span>
+               <span>FLUXO DE CAIXA NOXARTE • by Israel Dev</span>
             </div>
             <button class="menu-toggle-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
         </div>
@@ -1266,8 +1269,8 @@ renderEstoqueGeral();
             <td>${i.nome}</td>
             <td style="color:${i.qtd < 5 ? 'red' : 'green'}; font-weight:bold;">
                 ${i.qtd} ${i.unidade}
-            </td>
-            <td style="text-align:center;">
+            
+              <td style="text-align:center;">
                 <button class="btn-mini btn-sub" onclick="ajustarLanche(${i.id}, -1)">-</button>
                 <button class="btn-mini btn-add" onclick="ajustarLanche(${i.id}, 1)">+</button>
                 <button class="btn-mini btn-del" onclick="removerLanche(${i.id})">🗑</button>
@@ -1585,12 +1588,7 @@ renderEstoqueGeral();   // 👈 ADICIONA
         if(p === "5616") tab(id, btn);
         else if(p !== null) alert("Acesso Negado. Senha incorreta.");
     }
-   window.addEventListener("load", () => {
-    setTimeout(() => {
-        const splash = document.getElementById("splash-screen");
-        if(splash) splash.style.display = "none";
-    }, 3000);
-});   
+   
   
 </script>
 </body>
