@@ -252,7 +252,7 @@
         }
     </style>
 </head>
-<body onload="inicializar()">
+<body>
 
     <div id="login-screen">
         <div class="login-header">
@@ -1372,6 +1372,20 @@ renderEstoqueGeral();   // 👈 ADICIONA
         else if(p !== null) alert("Acesso Negado. Senha incorreta.");
     }
         console.log("JS carregou até o final");
+window.addEventListener("load", () => {
+    try {
+        inicializar();
+        console.log("Sistema iniciado com sucesso.");
+    } catch (e) {
+        console.error(e);
+        alert(
+            "Erro ao iniciar o sistema:\n\n" +
+            e.message +
+            "\n\nLinha: " +
+            (e.lineNumber || e.line || "desconhecida")
+        );
+    }
+});
 </script>
 </body>
 </html>
