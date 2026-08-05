@@ -22,6 +22,23 @@
         .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
         .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
+        .header { 
+    background: var(--primary); 
+    color: white; 
+    padding: 35px 15px 10px 15px; /* Deixa um espaço de 35px no topo */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.header button {
+    background: none; 
+    border: none; 
+    color: white; 
+    font-size: 2rem; 
+    padding: 10px;
+    cursor: pointer;
+}
         .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; }
         .menu-btn.active { background: var(--primary); color: white; }
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
@@ -65,7 +82,7 @@
             </div>
             <div class="main-content">
                 <div id="inicio" class="card active">
-                    <h3>Bem-vindo, Point da Pizza!</h3>
+                    <h3>Bem-vindo, ao sistema do Point da Pizza!</h3>
                     <div id="area-alertas">✅ Estoque atualizado.</div>
                 </div>
                 <div id="pdv" class="card">
@@ -128,12 +145,23 @@
         } else {
             m += `%0A✅ Estoque OK!`;
         }
-        
-        // Link em formato HTTPS para funcionar em qualquer celular
-        const url = `https://api.whatsapp.com/send?phone=55993375616&text=${m}`;
-        window.open(url, '_blank');
-    }
 
+        // Tenta abrir pelo método de compartilhamento direto do Android (mais forte)
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${m}`;
+        
+        // Se estiver no celular, tenta o link de compartilhamento do sistema
+        if (navigator.share) {
+            navigator.share({
+                title: 'Relatório Point da Pizza',
+                text: decodeURIComponent(m.replace(/%0A/g, '\n')),
+            }).catch(() => {
+                window.location.href = whatsappUrl;
+            });
+        } else {
+            // Se falhar ou estiver no PC, vai pelo link normal
+            window.location.href = whatsappUrl;
+        }
+    }
     function renderListaEquipe() { document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `<div class="list-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;"><span>${f.nome}</span><button onclick="removerFunc(${f.id})" style="color:red; background:none; border:none;">Remover</button></div>`).join(''); }
     function removerFunc(id) { if(id === idLogado) return alert("Não pode se remover!"); if(confirm("Remover da equipe?")) { equipe = equipe.filter(f => f.id !== id); db.ref('equipe').set(equipe); } }
     function addFunc() { const n = document.getElementById('fNome').value; const s = document.getElementById('fSenha').value; const c = document.getElementById('fCargo').value; const f = document.getElementById('fFoto').files[0]; const add = (img) => { equipe.push({id: Date.now(), nome: n, senha: s, cargo: c, foto: img}); db.ref('equipe').set(equipe); alert("Membro adicionado!"); }; if(f) { const r = new FileReader(); r.onload = e => add(e.target.result); r.readAsDataURL(f); } else add(null); }
@@ -143,5 +171,8 @@
 </script>
 </body>
 </html>
+
+
+
 
 
