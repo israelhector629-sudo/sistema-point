@@ -1,127 +1,415 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Point da Pizza - App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Point da Pizza - App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #e74c3c; --secondary: #1a252f; --success: #27ae60; --bg: #f4f7f8; --accent: #3498db; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--secondary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+        /* === ANIMAÇÕES GERAIS === */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-<style>
-:root {
-  --primary:#e74c3c;
-  --secondary:#1a252f;
-  --success:#27ae60;
-}
-body{margin:0;font-family:Arial;background:var(--secondary)}
+        /* LOGIN */
+        #login-screen { position: fixed; inset: 0; background: var(--secondary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; transition: opacity 0.6s ease, visibility 0.6s ease; }
+        .login-header { text-align: center; margin-bottom: 20px; animation: fadeIn 0.8s ease-out; }
+        .login-header img { width: 150px !important; height: 150px !important; border-radius: 50%; border: 4px solid white; margin-bottom: 10px; object-fit: cover; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); animation: pulse 2.5s infinite; }
+        .login-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; overflow-y: auto; max-height: 50vh; padding: 10px; animation: fadeIn 1s ease-out 0.2s both; }
+        .login-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; width: 130px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .login-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.15); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .login-card:active { transform: scale(0.95); }
+        .login-card img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid white; margin-bottom: 8px; object-fit: cover; }
+        .login-card span { display: block; font-size: 0.75rem; color: #bdc3c7; }
 
-#login-screen{
-  position:fixed;inset:0;background:#1a252f;color:#fff;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-}
-.login-card{
-  background:#ffffff20;padding:10px;margin:5px;border-radius:10px;cursor:pointer;text-align:center;
-}
+        /* APP */
+        #app-container { display: none; flex-direction: column; width: 100%; height: 100vh; background: var(--bg); animation: fadeIn 0.5s ease-out; }
+        
+        .header { background: var(--primary); color: white; padding: 40px 15px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .logo-top { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 1.1rem; }
+        .logo-top img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background: white; object-fit: cover; }
+        .menu-toggle-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; transition: transform 0.3s ease; }
+        .menu-toggle-btn:active { transform: rotate(90deg) scale(0.9); }
 
-#app-container{display:none;height:100vh;background:#f4f7f8}
-.header{background:var(--primary);color:#fff;padding:10px}
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        .sidebar { background: var(--secondary); color: white; width: 260px; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1); z-index: 1000; transform: translateX(0); }
+        .sidebar-brand { padding: 15px; text-align: center; background: var(--primary); color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .user-info { padding: 20px; text-align: center; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .user-info img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 8px; }
+        .badge { font-size: 0.7rem; background: var(--accent); padding: 2px 8px; border-radius: 10px; display: inline-block; }
 
-.card{display:none;padding:15px}
-.card.active{display:block}
+        .menu-btn { background: none; border: none; color: #bdc3c7; padding: 15px 20px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1rem; width: 100%; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .menu-btn::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--primary); transform: scaleY(0); transition: transform 0.3s ease; transform-origin: bottom; }
+        .menu-btn:hover { background: rgba(255,255,255,0.05); color: white; padding-left: 25px; }
+        .menu-btn.active { background: var(--primary); color: white; }
+        .menu-btn.active::before { transform: scaleY(1); }
 
-.btn{padding:10px;border:none;border-radius:5px;color:#fff;cursor:pointer}
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; scroll-behavior: smooth; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; margin-bottom: 15px; transform: translateY(10px); opacity: 0; }
+        .card.active { display: block; animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
 
-</style>
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1); }
+        
+        .btn-acao { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .btn-acao::after { content: ''; background: rgba(255,255,255,0.2); position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; transition: transform 0.4s ease, opacity 0.4s ease; }
+        .btn-acao:active::after { transform: translate(-50%, -50%) scale(2); opacity: 1; transition: 0s; }
+        .btn-acao:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-acao:active { transform: translateY(1px); box-shadow: none; }
+        .btn-whatsapp { background: #25D366; color: white; margin-top: 10px; }
+        
+        .table-res { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th { background: #f8f9fa; padding: 15px 10px; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
+        td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.95rem; vertical-align: middle; transition: background 0.2s ease; }
+        tr:hover td { background: #fcfcfc; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; transition: background 0.2s ease; }
+        .list-item:hover { background: #fcfcfc; }
+
+        .btn-mini { width: 34px; height: 34px; border: none; border-radius: 6px; cursor: pointer; color: white; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-mini:hover { transform: scale(1.1); }
+        .btn-mini:active { transform: scale(0.9); }
+        .btn-sub { background: #f39c12; } 
+        .btn-add { background: var(--success); } 
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+        .btn-del:hover { background: #c0392b; transform: scale(1.05); }
+
+        #area-alertas > div { animation: slideInRight 0.4s ease-out; }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: 0; height: 100%; transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); opacity: 0; transition: opacity 0.3s ease; }
+            .overlay.active { display: block; opacity: 1; }
+        }
+    </style>
 </head>
+<body onload="inicializar()">
 
-<body onload="init()">
+    <div id="login-screen">
+        <div class="login-header">
+            <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'" alt="Logo Point">
+            <h2 style="margin-top:10px; letter-spacing: 2px;">POINT DA PIZZA</h2>
+        </div>
+        <div class="login-grid" id="login-grid">
+            </div>
+    </div>
 
-<div id="login-screen">
-  <h2>POINT DA PIZZA</h2>
-  <div id="login"></div>
-</div>
+    <div id="app-container">
+        <div class="header">
+            <div class="logo-top">
+                <img src="logo.jpg.jpeg" onerror="this.src='https://via.placeholder.com/150'">
+                <span>ESTOQUE POINT</span>
+            </div>
+            <button class="menu-toggle-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+        </div>
 
-<div id="app-container">
-  <div class="header">ESTOQUE</div>
+        <div class="app-body">
+            <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+            <div class="sidebar" id="sidebar">
+                <div class="user-info" id="user-info"></div>
+                <button class="menu-btn active" onclick="tab('inicio', this)"><i class="fas fa-home"></i> Início</button>
+                <button class="menu-btn" onclick="tab('pdv', this)"><i class="fas fa-minus-circle"></i> Lançar Saída</button>
+                <button class="menu-btn" onclick="tab('estoque', this)"><i class="fas fa-boxes"></i> Estoque</button>
+                <button class="menu-btn" onclick="tab('relatorio', this)"><i class="fas fa-file-invoice"></i> Relatório Turno</button>
+                <button class="menu-btn" onclick="checkAdmin('config', this)"><i class="fas fa-cog"></i> Equipe / Ajustes</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:#c0392b; color:white; border:none; font-weight:bold; cursor:pointer; transition: background 0.3s ease;">SAIR DO SISTEMA</button>
+            </div>
 
-  <div class="card active" id="estoque">
-    <h3>Estoque</h3>
-    <input id="nome" placeholder="Item">
-    <input id="qtd" type="number" placeholder="Qtd">
-    <button class="btn" style="background:var(--primary)" onclick="addItem()">Salvar</button>
+            <div class="main-content">
+                <div id="inicio" class="card active">
+                    <h3><i class="fas fa-bell" style="color:var(--primary)"></i> Alertas Rápidos</h3>
+                    <div id="area-alertas" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--primary);"></div>
+                </div>
 
-    <ul id="lista"></ul>
-  </div>
-</div>
+                <div id="pdv" class="card">
+                    <h3><i class="fas fa-minus-circle" style="color:var(--primary)"></i> Registrar Saída Rápida</h3>
+                    <p style="color:#666; font-size:14px; margin-bottom:15px;">Selecione o item que foi gasto ou vendido.</p>
+                    <select id="selProd"></select>
+                    <input type="number" id="qSai" value="1" step="0.1" placeholder="Quantidade">
+                    <button class="btn-acao" style="background:var(--success);" onclick="baixar()"><i class="fas fa-check"></i> CONFIRMAR SAÍDA</button>
+                </div>
+
+                <div id="estoque" class="card">
+                    <h3><i class="fas fa-boxes" style="color:var(--primary)"></i> Gestão de Insumos</h3>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
+                        <input type="text" id="iNome" placeholder="Nome do Item (Ex: Massa)">
+                        <input type="number" id="iQtd" placeholder="Quantidade Total">
+                        <select id="iUnid"><option>Un</option><option>Kg</option><option>Pct</option><option>L</option></select>
+                        <button class="btn-acao" style="background:var(--primary);" onclick="salvarItem()"><i class="fas fa-save"></i> SALVAR NOVO ITEM</button>
+                    </div>
+                    
+                    <div class="table-res">
+                        <table>
+                            <thead><tr><th>Item</th><th>Qtd</th><th style="text-align:center;">Ações</th></tr></thead>
+                            <tbody id="corpo-estoque-lista"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="relatorio" class="card">
+                    <h3><i class="fas fa-file-invoice" style="color:var(--primary)"></i> Fechamento de Turno</h3>
+                    <p style="margin:15px 0; color:#666; line-height: 1.5;">Clique no botão abaixo para gerar o relatório automático de estoque. Ele abrirá o seu WhatsApp para você escolher quem vai receber a lista.</p>
+                    <button class="btn-acao btn-whatsapp" onclick="enviarRelatorio()"><i class="fab fa-whatsapp"></i> ENVIAR RELATÓRIO NO WHATSAPP</button>
+                </div>
+
+                <div id="config" class="card">
+                    <h3><i class="fas fa-users" style="color:var(--primary)"></i> Gerenciar Equipe</h3>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #eee;">
+                        <input type="text" id="fNome" placeholder="Nome do Funcionário">
+                        <select id="fCargo"><option>Pizzaiolo</option><option>Auxiliar</option><option>Atendente</option><option>Patrão</option></select>
+                        <input type="password" id="fSenha" placeholder="Senha de Acesso (Ex: 1234)">
+                        <button class="btn-acao" style="background:var(--secondary);" onclick="addFunc()"><i class="fas fa-user-plus"></i> CADASTRAR MEMBRO</button>
+                    </div>
+                    <h4 style="margin-top: 20px; color: #555; border-bottom: 2px solid #eee; padding-bottom: 5px;">Equipe Cadastrada</h4>
+                    <div id="lista-equipe-del" style="margin-top:10px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
-  databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyCg-jwfXSEWI6dXZqXpKlmbhY-zTaiXyyM",
+      authDomain: "point-da-pizza-fc5d6.firebaseapp.com",
+      databaseURL: "https://point-da-pizza-fc5d6-default-rtdb.firebaseio.com",
+      projectId: "point-da-pizza-fc5d6",
+      storageBucket: "point-da-pizza-fc5d6.appspot.com",
+      messagingSenderId: "658125716246",
+      appId: "1:658125716246:web:ca129202695923984579d4ba"
+    };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let estoque = []; let equipe = [];
+    let idLogado = null; let nomeLogado = "";
 
-let estoque=[];
-let equipe=[{id:1,nome:"Israel",senha:"5616"}];
+    function inicializar() {
+        db.ref('equipe').on('value', snap => {
+            const data = snap.val();
+            equipe = data ? Object.values(data).filter(f => f != null) : [];
+            
+            if(equipe.length === 0) {
+                equipe = [{id: 1, nome: "Israel", cargo: "Patrão", senha: "5616"}];
+                db.ref('equipe').set(equipe);
+            }
+            
+            renderLogin();
+            renderListaEquipe();
+        });
 
-function init(){
-  renderLogin();
+        db.ref('estoque_app').on('value', snap => {
+            const data = snap.val();
+            estoque = data ? Object.values(data).filter(i => i != null) : [];
+            renderEstoque();
+        });
+    }
 
-  db.ref("estoque").on("value",snap=>{
-    estoque=snap.val()||[];
-    renderLista();
-  });
-}
+    function renderLogin() {
+        document.getElementById('login-grid').innerHTML = equipe.map(f => `
+            <div class="login-card" onclick="entrar(${f.id})">
+                <img src="${f.foto || 'https://via.placeholder.com/100'}">
+                <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">${f.nome}</div>
+                <span style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; color:white;">${f.cargo}</span>
+            </div>
+        `).join('');
+    }
 
-function renderLogin(){
-  document.getElementById("login").innerHTML = equipe.map(f=>`
-    <div class="login-card" onclick="login(${f.id})">
-      ${f.nome}
-    </div>
-  `).join("");
-}
+    function entrar(id) {
+        const f = equipe.find(x => x.id === id);
+        const p = prompt(`Digite a senha para ${f.nome}:`);
+        
+        if(p === (f.senha || "5616")) {
+            idLogado = id; nomeLogado = f.nome;
+            const loginScreen = document.getElementById('login-screen');
+            loginScreen.style.opacity = '0';
+            loginScreen.style.visibility = 'hidden';
+            
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+            }, 600);
+            
+            document.getElementById('user-info').innerHTML = `<img src="${f.foto || 'https://via.placeholder.com/100'}"><h4>${f.nome}</h4><div class="badge">${f.cargo}</div>`;
+        } else if(p !== null) {
+            alert("Senha Incorreta!");
+        }
+    }
 
-function login(id){
-  let f=equipe.find(x=>x.id===id);
-  let s=prompt("Senha:");
-  if(s===f.senha){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("app-container").style.display="block";
-  }else alert("Senha errada");
-}
+    function renderEstoque() {
+        if(estoque.length === 0) {
+            document.getElementById('selProd').innerHTML = `<option>Nenhum item cadastrado</option>`;
+            document.getElementById('corpo-estoque-lista').innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color: #999;">O estoque está vazio. Cadastre o primeiro item!</td></tr>`;
+            document.getElementById('area-alertas').innerHTML = `<div style="color: #666;"><i class="fas fa-info-circle"></i> Nenhum alerta. Cadastre insumos na aba Estoque.</div>`;
+            return;
+        }
 
-function addItem(){
-  let nome=document.getElementById("nome").value;
-  let qtd=parseFloat(document.getElementById("qtd").value);
+        document.getElementById('selProd').innerHTML = estoque.map(i => `<option value="${i.id}">${i.nome} (Restam ${i.qtd})</option>`).join('');
+        
+        const faltas = estoque.filter(i => i.qtd < 5);
+        document.getElementById('area-alertas').innerHTML = faltas.length > 0 
+            ? `<div style="color:#c0392b; font-weight:bold; font-size:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção! Faltando:<br><br> ${faltas.map(f => `• ${f.nome} (${f.qtd} ${f.unidade})`).join('<br>')}</div>` 
+            : `<div style="color:var(--success); font-weight:bold;"><i class="fas fa-check-circle"></i> Estoque 100% em dia!</div>`;
 
-  if(!nome||isNaN(qtd)) return alert("Preencha");
+        document.getElementById('corpo-estoque-lista').innerHTML = estoque.map(i => `
+            <tr>
+                <td><strong style="color: var(--secondary);">${i.nome}</strong></td>
+                <td style="color:${i.qtd < 5 ? '#e74c3c' : 'var(--success)'}; font-weight:bold; font-size:16px;">
+                    ${i.qtd} <span style="font-size:12px; color:#999; font-weight:normal;">${i.unidade}</span>
+                </td>
+                <td style="text-align:center;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                        <button class="btn-mini btn-sub" onclick="ajustarQtd(${i.id}, -1)" title="Diminuir"><i class="fas fa-minus"></i></button>
+                        <button class="btn-mini btn-add" onclick="ajustarQtd(${i.id}, 1)" title="Adicionar"><i class="fas fa-plus"></i></button>
+                        <button class="btn-mini btn-del" style="margin-left: 8px;" onclick="removerItemEstoque(${i.id})" title="Excluir"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
 
-  estoque.push({id:Date.now(),nome,qtd});
-  db.ref("estoque").set(estoque);
+    function ajustarQtd(id, delta) {
+        const item = estoque.find(x => x.id === id);
+        if(item) {
+            item.qtd = Math.max(0, item.qtd + delta);
+            db.ref('estoque_app').set(estoque);
+        }
+    }
 
-  document.getElementById("nome").value="";
-  document.getElementById("qtd").value="";
-}
+    function enviarRelatorio() {
+        const faltas = estoque.filter(i => i.qtd < 5);
+        let msg = `🍕 *FECHAMENTO DE TURNO - POINT DA PIZZA*\\n\\n`;
+        msg += `*Responsável:* ${nomeLogado}\\n`;
+        msg += `*Data:* ${new Date().toLocaleDateString()}\\n\\n`;
+        
+        if(faltas.length > 0) {
+            msg += `⚠️ *COMPRAS NECESSÁRIAS (URGENTE):*\\n`;
+            faltas.forEach(f => msg += `- ${f.nome} (Restam apenas ${f.qtd} ${f.unidade})\\n`);
+        } else {
+            msg += `✅ *ESTOQUE:* Tudo em ordem, nada para comprar!\\n`;
+        }
+        
+        msg += `\\n_Enviado via App Point da Pizza_`;
+        
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        window.location.href = url;
+    }
 
-function renderLista(){
-  document.getElementById("lista").innerHTML = estoque.map(i=>`
-    <li>
-      ${i.nome} - ${i.qtd}
-      <button onclick="remover(${i.id})">X</button>
-    </li>
-  `).join("");
-}
+    function removerItemEstoque(id) {
+        if(confirm("Tem certeza que deseja excluir este item?")) {
+            estoque = estoque.filter(i => i.id !== id);
+            db.ref('estoque_app').set(estoque);
+        }
+    }
 
-function remover(id){
-  estoque = estoque.filter(i=>i.id!==id);
-  db.ref("estoque").set(estoque);
-}
+    function baixar() {
+        if(estoque.length === 0) return alert("Cadastre itens no estoque primeiro!");
+        const id = document.getElementById('selProd').value;
+        const q = parseFloat(document.getElementById('qSai').value);
+        const i = estoque.find(x => x.id == id);
+        if(i) { 
+            i.qtd = Math.max(0, i.qtd - q); 
+            db.ref('estoque_app').set(estoque); 
+            // Feedback visual em vez de alert
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-check"></i> LANÇADO!`;
+            btn.style.background = "#2ecc71";
+            setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--success)"; }, 1500);
+            
+            document.getElementById('qSai').value = 1;
+        }
+    }
+
+    function salvarItem() {
+        const n = document.getElementById('iNome').value.trim();
+        const q = parseFloat(document.getElementById('iQtd').value);
+        const u = document.getElementById('iUnid').value;
+        if(!n || isNaN(q)) return alert("Preencha o nome e a quantidade corretamente!");
+
+        const existente = estoque.find(i => i.nome.toLowerCase() === n.toLowerCase());
+        if(existente) { 
+            existente.qtd += q; 
+        } else { 
+            estoque.push({id: Date.now(), nome: n, qtd: q, unidade: u}); 
+        }
+        
+        db.ref('estoque_app').set(estoque);
+        document.getElementById('iNome').value = "";
+        document.getElementById('iQtd').value = "";
+        
+        // Feedback visual
+        const btn = event.currentTarget;
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-check"></i> SALVO!`;
+        btn.style.background = "var(--success)";
+        setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--primary)"; }, 1500);
+    }
+
+    function renderListaEquipe() {
+        document.getElementById('lista-equipe-del').innerHTML = equipe.map(f => `
+            <div class="list-item">
+                <div><b style="color: var(--secondary);">${f.nome}</b> <br><small style="color:#999"><i class="fas fa-tag" style="font-size: 10px;"></i> ${f.cargo}</small></div>
+                <button onclick="removerFunc(${f.id})" class="btn-del" title="Remover Membro"><i class="fas fa-user-times"></i></button>
+            </div>
+        `).join('');
+    }
+
+    function removerFunc(id) {
+        if(id === idLogado) return alert("Você não pode remover a si mesmo enquanto estiver logado!");
+        if(confirm("Tem certeza que deseja remover este membro da equipe?")) {
+            equipe = equipe.filter(f => f.id !== id);
+            db.ref('equipe').set(equipe);
+        }
+    }
+
+    function addFunc() {
+        const n = document.getElementById('fNome').value.trim();
+        const s = document.getElementById('fSenha').value.trim();
+        const c = document.getElementById('fCargo').value;
+        
+        if(!n || !s) return alert("Por favor, preencha o Nome e a Senha.");
+        
+        equipe.push({id: Date.now(), nome: n, senha: s, cargo: c});
+        db.ref('equipe').set(equipe);
+        
+        document.getElementById('fNome').value = "";
+        document.getElementById('fSenha').value = "";
+        
+        const btn = event.currentTarget;
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-check"></i> CADASTRADO!`;
+        btn.style.background = "var(--success)";
+        setTimeout(() => { btn.innerHTML = textoOriginal; btn.style.background = "var(--secondary)"; }, 1500);
+    }
+
+    function tab(id, btn) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.menu-btn').forEach(m => m.classList.remove('active'));
+        btn.classList.add('active');
+        if(window.innerWidth <= 768) toggleMenu();
+    }
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function checkAdmin(id, btn) {
+        const p = prompt("Digite a Senha do Patrão para acessar Configurações:");
+        if(p === "5616") tab(id, btn);
+        else if(p !== null) alert("Acesso Negado. Senha incorreta.");
+    }
 </script>
-
 </body>
 </html>
